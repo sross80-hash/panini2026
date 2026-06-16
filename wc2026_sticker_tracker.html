@@ -1,0 +1,1652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panini FIFA World Cup 2026 – Sticker Tracker</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #161920;
+    --card: #1e2230;
+    --border: #2a2f40;
+    --accent: #e8c53a;
+    --accent2: #e84c3a;
+    --green: #3ae87f;
+    --text: #e8ecf0;
+    --muted: #7a8294;
+    --radius: 10px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+  }
+
+  /* HEADER */
+  header {
+    background: linear-gradient(135deg, #1a1060 0%, #0d0f14 60%);
+    border-bottom: 2px solid var(--accent);
+    padding: 20px 24px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .header-left { display: flex; align-items: center; gap: 14px; }
+
+  .trophy { font-size: 36px; }
+
+  .header-title h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 2px;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .header-title p {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .header-stats {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+
+  .stat-pill {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 6px 16px;
+    text-align: center;
+  }
+  .stat-pill .val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    line-height: 1;
+  }
+  .stat-pill .lbl {
+    font-size: 9px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .val.missing { color: var(--accent2); }
+  .val.have { color: var(--green); }
+  .val.pct { color: var(--accent); }
+
+  /* PROGRESS BAR */
+  .progress-bar-wrap {
+    width: 100%;
+    background: var(--card);
+    height: 6px;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--green));
+    transition: width 0.4s ease;
+    border-radius: 3px;
+  }
+
+  /* CONTROLS */
+  .controls {
+    padding: 16px 24px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: center;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .search-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 14px;
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+    width: 220px;
+    outline: none;
+  }
+  .search-box:focus { border-color: var(--accent); }
+  .search-box::placeholder { color: var(--muted); }
+
+  .filter-btn {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 14px;
+    color: var(--text);
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .filter-btn.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 700; }
+
+  .group-select {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 8px 14px;
+    color: var(--text);
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    cursor: pointer;
+    outline: none;
+  }
+  .group-select:focus { border-color: var(--accent); }
+
+  .btn-mark-all {
+    background: var(--accent2);
+    border: none;
+    border-radius: var(--radius);
+    padding: 8px 16px;
+    color: #fff;
+    font-size: 12px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    cursor: pointer;
+    margin-left: auto;
+  }
+  .btn-mark-all:hover { opacity: 0.85; }
+
+  /* ERRORS BANNER */
+  .errors-banner {
+    margin: 16px 24px;
+    background: #2a1515;
+    border: 1px solid var(--accent2);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+  }
+  .errors-banner h3 {
+    color: var(--accent2);
+    font-size: 12px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .error-item {
+    font-size: 12px;
+    color: #e8b4b4;
+    padding: 3px 0;
+    border-bottom: 1px solid #3a2020;
+  }
+  .error-item:last-child { border-bottom: none; }
+  .error-item strong { color: var(--accent2); }
+
+  /* MAIN */
+  main { padding: 16px 24px 40px; }
+
+  .group-section { margin-bottom: 32px; }
+
+  .group-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--border);
+  }
+  .group-badge {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    background: var(--accent);
+    color: #000;
+    padding: 2px 10px;
+    border-radius: 4px;
+    letter-spacing: 1px;
+  }
+  .group-name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 1px;
+    color: var(--text);
+  }
+  .group-progress {
+    margin-left: auto;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  .group-progress span { color: var(--accent); font-weight: 700; }
+
+  /* TEAM CARD */
+  .teams-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 12px;
+  }
+
+  .team-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .team-card.complete { border-color: var(--green); }
+  .team-card:hover { border-color: var(--accent); }
+
+  .team-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+  }
+  .team-flag { font-size: 22px; }
+  .team-name {
+    font-weight: 700;
+    font-size: 13px;
+    flex: 1;
+  }
+  .team-count {
+    font-size: 11px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  .team-count.done { color: var(--green); }
+
+  .stickers-list {
+    padding: 10px 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .sticker-chip {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    user-select: none;
+    font-size: 11px;
+    color: var(--text);
+  }
+  .sticker-chip:hover { border-color: var(--accent); }
+  .sticker-chip.have {
+    background: #0d2b1a;
+    border-color: var(--green);
+    color: var(--green);
+    text-decoration: line-through;
+    opacity: 0.7;
+  }
+  .sticker-chip.missing {
+    border-color: var(--accent2);
+    color: #f4a0a0;
+  }
+  .sticker-chip .code {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+  }
+  .sticker-chip .name-label {
+    font-size: 10px;
+    color: var(--muted);
+    max-width: 100px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  .sticker-chip.have .name-label { color: #4a7a5a; }
+
+  /* HISTORY SECTION */
+  .history-section {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 12px;
+  }
+  .history-section h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    color: var(--accent);
+  }
+  .history-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  /* COLA PAGE */
+  .cola-section {
+    background: #1a0808;
+    border: 1px solid #8b1a1a;
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 12px;
+  }
+  .cola-section h3 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    color: #e84c3a;
+  }
+
+  /* HIDDEN */
+  .hidden { display: none !important; }
+
+  /* Empty state */
+  .empty-state {
+    text-align: center;
+    padding: 40px;
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  footer {
+    text-align: center;
+    padding: 20px;
+    color: var(--muted);
+    font-size: 11px;
+    border-top: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="trophy">🏆</div>
+    <div class="header-title">
+      <h1>Panini FIFA World Cup 2026</h1>
+      <p>Sticker Collection Tracker</p>
+    </div>
+  </div>
+  <div class="header-stats">
+    <div class="stat-pill">
+      <div class="val have" id="stat-have">0</div>
+      <div class="lbl">Collected</div>
+    </div>
+    <div class="stat-pill">
+      <div class="val missing" id="stat-missing">0</div>
+      <div class="lbl">Missing</div>
+    </div>
+    <div class="stat-pill">
+      <div class="val pct" id="stat-pct">0%</div>
+      <div class="lbl">Complete</div>
+    </div>
+  </div>
+  <div style="width:100%; padding-top:4px;">
+    <div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-bar" style="width:0%"></div></div>
+  </div>
+</header>
+
+<div class="controls">
+  <input class="search-box" type="text" id="search" placeholder="🔍  Search team or sticker…" oninput="filterAll()">
+  <button class="filter-btn active" onclick="setFilter('all', this)">All stickers</button>
+  <button class="filter-btn" onclick="setFilter('missing', this)">Missing only</button>
+  <button class="filter-btn" onclick="setFilter('have', this)">Collected</button>
+  <select class="group-select" onchange="scrollToGroup(this.value)">
+    <option value="">Jump to group…</option>
+    <option value="A">Group A</option>
+    <option value="B">Group B</option>
+    <option value="C">Group C</option>
+    <option value="D">Group D</option>
+    <option value="E">Group E</option>
+    <option value="F">Group F</option>
+    <option value="G">Group G</option>
+    <option value="H">Group H</option>
+    <option value="I">Group I</option>
+    <option value="J">Group J</option>
+    <option value="K">Group K</option>
+    <option value="L">Group L</option>
+    <option value="HISTORY">History</option>
+    <option value="COCA">Coca-Cola</option>
+  </select>
+  <button class="btn-mark-all" onclick="resetAll()">Reset all</button>
+</div>
+
+<div class="errors-banner">
+  <h3>⚠️ Errors & Notes Found in Your Album</h3>
+  <div class="error-item"><strong>Page 14 – Paraguay:</strong> Team photo slot shows "FIFA World Cup Qualifiers" graphic instead of the standard "We Are…" photo used by all other teams. May be a Panini print variation for Paraguay.</div>
+  <div class="error-item"><strong>Page 33 – France:</strong> Photo taken rotated 90°. Sticker FRA 5 (Jules Koundé) confirmed empty. Re-photograph for cleaner view.</div>
+  <div class="error-item"><strong>Page 34 – Senegal/Iraq:</strong> Two-page spread photographed at an angle — SEN 2, SEN 3, SEN 5 confirmed empty; IRQ 6, IRQ 7 confirmed empty.</div>
+  <div class="error-item"><strong>Page 51 – Coca-Cola page:</strong> CC1 (Lamine Yamal), CC3 (Harry Kane), CC4 (Santiago Giménez), CC5 (Joshua Kimmich) slots empty. Two stickers have been placed: Lautaro Martínez and one unnamed. CC7, CC8, CC9, CC10 also appear empty.</div>
+  <div class="error-item"><strong>Page 49/50 – History pages:</strong> FWC 11 and FWC 12 confirmed empty (1954 Switzerland and 1962 Chile). FWC 19 (Qatar 2022) also empty.</div>
+</div>
+
+<main id="main-content"></main>
+
+<footer>Tap any sticker chip to toggle collected ✓ &nbsp;|&nbsp; Data scanned from your album photos, June 16 2026</footer>
+
+<script>
+// ============================================================
+// DATA — Every sticker visible in the album, with missing flag
+// ============================================================
+const ALBUM = [
+  // ── GROUP A ──────────────────────────────────────────────
+  { group:'A', team:'Mexico', flag:'🇲🇽', code:'MEX 1', name:'Badge/Foil', missing:false },
+  { group:'A', team:'Mexico', flag:'🇲🇽', code:'MEX 2', name:'Luis Malagón', missing:false },
+  { group:'A', team:'Mexico', flag:'🇲🇽', code:'MEX 3', name:'Jorge Sánchez', missing:true },
+  { group:'A', team:'Mexico', flag:'🇲🇽', code:'MEX 4', name:'César Montes', missing:false },
+  { group:'A', team:'Mexico', flag:'🇲🇽', code:'MEX 5', name:'Jesús Gallardo', missing:false },
+  { group:'A', team:'Mexico', flag:'🇲🇽', code:'MEX 6', name:'Johan Vásquez', missing:false },
+  { group:'A', team:'Mexico', flag:'🇲🇽', code:'MEX 7', name:'Erick Sánchez', missing:false },
+  { group:'A', team:'Mexico', flag:'🇲🇽', code:'MEX 8', name:'Hirving Lozano', missing:false },
+  { group:'A', team:'Mexico', flag:'🇲🇽', code:'MEX 9', name:'Carlos Rodríguez', missing:true },
+  { group:'A', team:'Mexico', flag:'🇲🇽', code:'MEX 10', name:'Edson Álvarez', missing:false },
+  { group:'A', team:'Mexico', flag:'🇲🇽', code:'MEX 11', name:'Orbelin Pineda', missing:true },
+  { group:'A', team:'Mexico', flag:'🇲🇽', code:'MEX 12', name:'Santiago Giménez', missing:false },
+  { group:'A', team:'Mexico', flag:'🇲🇽', code:'MEX 13', name:'Team Photo', missing:true },
+  { group:'A', team:'Mexico', flag:'🇲🇽', code:'MEX 14', name:'Raúl Jiménez', missing:false },
+  { group:'A', team:'Mexico', flag:'🇲🇽', code:'MEX 15', name:'Alexis Vega', missing:false },
+  { group:'A', team:'Mexico', flag:'🇲🇽', code:'MEX 16', name:'Israel Reyes', missing:false },
+  { group:'A', team:'Mexico', flag:'🇲🇽', code:'MEX 17', name:'Diego Lainez', missing:false },
+  { group:'A', team:'Mexico', flag:'🇲🇽', code:'MEX 18', name:'Roberto Alvarado', missing:false },
+  { group:'A', team:'Mexico', flag:'🇲🇽', code:'MEX 19', name:'César Huerta', missing:false },
+  { group:'A', team:'Mexico', flag:'🇲🇽', code:'MEX 20', name:'Manuel Ruiz', missing:false },
+
+  { group:'A', team:'South Africa', flag:'🇿🇦', code:'RSA 1', name:'Badge/Foil', missing:false },
+  { group:'A', team:'South Africa', flag:'🇿🇦', code:'RSA 2', name:'Ronwen Williams', missing:true },
+  { group:'A', team:'South Africa', flag:'🇿🇦', code:'RSA 3', name:'Spio Chaine', missing:false },
+  { group:'A', team:'South Africa', flag:'🇿🇦', code:'RSA 4', name:'Aubrey Modiba', missing:false },
+  { group:'A', team:'South Africa', flag:'🇿🇦', code:'RSA 5', name:'Samukele Kabini', missing:true },
+  { group:'A', team:'South Africa', flag:'🇿🇦', code:'RSA 6', name:'Mbekeli Mbonazi', missing:false },
+  { group:'A', team:'South Africa', flag:'🇿🇦', code:'RSA 7', name:'Keegan Dolly', missing:false },
+  { group:'A', team:'South Africa', flag:'🇿🇦', code:'RSA 8', name:'Bongi Aunbas', missing:false },
+  { group:'A', team:'South Africa', flag:'🇿🇦', code:'RSA 9', name:'Thulani Ngatha', missing:false },
+  { group:'A', team:'South Africa', flag:'🇿🇦', code:'RSA 10', name:'Spio Mbule', missing:false },
+  { group:'A', team:'South Africa', flag:'🇿🇦', code:'RSA 11', name:'Teboho Mokoena', missing:true },
+  { group:'A', team:'South Africa', flag:'🇿🇦', code:'RSA 12', name:'Lyle Foster', missing:false },
+  { group:'A', team:'South Africa', flag:'🇿🇦', code:'RSA 13', name:'Team Photo', missing:false },
+  { group:'A', team:'South Africa', flag:'🇿🇦', code:'RSA 14', name:'Keegan Ndamane', missing:false },
+  { group:'A', team:'South Africa', flag:'🇿🇦', code:'RSA 15', name:'Vina Sithole', missing:true },
+  { group:'A', team:'South Africa', flag:'🇿🇦', code:'RSA 16', name:'Eraam Rayners', missing:false },
+  { group:'A', team:'South Africa', flag:'🇿🇦', code:'RSA 17', name:'Moau Mkota', missing:false },
+  { group:'A', team:'South Africa', flag:'🇿🇦', code:'RSA 18', name:'Given Appollis', missing:false },
+  { group:'A', team:'South Africa', flag:'🇿🇦', code:'RSA 19', name:'Khuliso Mudau', missing:false },
+  { group:'A', team:'South Africa', flag:'🇿🇦', code:'RSA 20', name:'Mossanat Sibisi', missing:false },
+
+  { group:'A', team:'Korea Republic', flag:'🇰🇷', code:'KOR 1', name:'Badge/Foil', missing:true },
+  { group:'A', team:'Korea Republic', flag:'🇰🇷', code:'KOR 2', name:'Hyeonwoo Jo', missing:false },
+  { group:'A', team:'Korea Republic', flag:'🇰🇷', code:'KOR 3', name:'Hwang-in Kwang', missing:false },
+  { group:'A', team:'Korea Republic', flag:'🇰🇷', code:'KOR 4', name:'Minjae Kim', missing:true },
+  { group:'A', team:'Korea Republic', flag:'🇰🇷', code:'KOR 5', name:'Yann Cho', missing:false },
+  { group:'A', team:'Korea Republic', flag:'🇰🇷', code:'KOR 6', name:'Youngwoo Seol', missing:true },
+  { group:'A', team:'Korea Republic', flag:'🇰🇷', code:'KOR 7', name:'Kangin Lee', missing:false },
+  { group:'A', team:'Korea Republic', flag:'🇰🇷', code:'KOR 8', name:'Taeseok Lee', missing:true },
+  { group:'A', team:'Korea Republic', flag:'🇰🇷', code:'KOR 9', name:'Myongjae Lee', missing:false },
+  { group:'A', team:'Korea Republic', flag:'🇰🇷', code:'KOR 10', name:'Jaesung Lee', missing:true },
+  { group:'A', team:'Korea Republic', flag:'🇰🇷', code:'KOR 11', name:'Seungho Park', missing:false },
+  { group:'A', team:'Korea Republic', flag:'🇰🇷', code:'KOR 12', name:'Jens Castrop', missing:false },
+  { group:'A', team:'Korea Republic', flag:'🇰🇷', code:'KOR 13', name:'Team Photo', missing:false },
+  { group:'A', team:'Korea Republic', flag:'🇰🇷', code:'KOR 14', name:'Donghyeong Lee', missing:false },
+  { group:'A', team:'Korea Republic', flag:'🇰🇷', code:'KOR 15', name:'Hanbeom Lee', missing:false },
+  { group:'A', team:'Korea Republic', flag:'🇰🇷', code:'KOR 16', name:'Hwangmin Son', missing:false },
+  { group:'A', team:'Korea Republic', flag:'🇰🇷', code:'KOR 17', name:'Guebung Cho', missing:true },
+  { group:'A', team:'Korea Republic', flag:'🇰🇷', code:'KOR 18', name:'Heechan Hwang', missing:false },
+  { group:'A', team:'Korea Republic', flag:'🇰🇷', code:'KOR 19', name:'Jeongu Oh', missing:true },
+
+  { group:'A', team:'Czechia', flag:'🇨🇿', code:'CZE 1', name:'Badge/Foil', missing:false },
+  { group:'A', team:'Czechia', flag:'🇨🇿', code:'CZE 2', name:'Ondřej Staněk', missing:false },
+  { group:'A', team:'Czechia', flag:'🇨🇿', code:'CZE 3', name:'Ladislav Krejčí', missing:false },
+  { group:'A', team:'Czechia', flag:'🇨🇿', code:'CZE 4', name:'Matěj Kovář', missing:false },
+  { group:'A', team:'Czechia', flag:'🇨🇿', code:'CZE 5', name:'Vladimir Coufal', missing:true },
+  { group:'A', team:'Czechia', flag:'🇨🇿', code:'CZE 6', name:'Jaroslav Zelený', missing:false },
+  { group:'A', team:'Czechia', flag:'🇨🇿', code:'CZE 7', name:'Tomáš Holeš', missing:true },
+  { group:'A', team:'Czechia', flag:'🇨🇿', code:'CZE 8', name:'David Zíma', missing:false },
+  { group:'A', team:'Czechia', flag:'🇨🇿', code:'CZE 9', name:'Michal Sadílek', missing:false },
+  { group:'A', team:'Czechia', flag:'🇨🇿', code:'CZE 10', name:'Lukáš Provod', missing:false },
+  { group:'A', team:'Czechia', flag:'🇨🇿', code:'CZE 11', name:'Pavel Šulc', missing:false },
+  { group:'A', team:'Czechia', flag:'🇨🇿', code:'CZE 12', name:'Matěj Vydra', missing:false },
+  { group:'A', team:'Czechia', flag:'🇨🇿', code:'CZE 13', name:'Team Photo', missing:false },
+  { group:'A', team:'Czechia', flag:'🇨🇿', code:'CZE 14', name:'Václav Černý', missing:false },
+  { group:'A', team:'Czechia', flag:'🇨🇿', code:'CZE 15', name:'Adam Hložek', missing:false },
+  { group:'A', team:'Czechia', flag:'🇨🇿', code:'CZE 16', name:'Vasil Kušej', missing:true },
+  { group:'A', team:'Czechia', flag:'🇨🇿', code:'CZE 17', name:'Tomáš Chorý', missing:false },
+  { group:'A', team:'Czechia', flag:'🇨🇿', code:'CZE 18', name:'Patrik Schick', missing:false },
+  { group:'A', team:'Czechia', flag:'🇨🇿', code:'CZE 19', name:'Lukáš Červ', missing:false },
+  { group:'A', team:'Czechia', flag:'🇨🇿', code:'CZE 20', name:'Tomáš Souček', missing:false },
+
+  // ── GROUP B ──────────────────────────────────────────────
+  { group:'B', team:'Canada', flag:'🇨🇦', code:'CAN 1', name:'Badge/Foil', missing:false },
+  { group:'B', team:'Canada', flag:'🇨🇦', code:'CAN 2', name:'Dayne St. Clair', missing:true },
+  { group:'B', team:'Canada', flag:'🇨🇦', code:'CAN 3', name:'Alphonso Davies', missing:false },
+  { group:'B', team:'Canada', flag:'🇨🇦', code:'CAN 4', name:'Alistair Johnston', missing:false },
+  { group:'B', team:'Canada', flag:'🇨🇦', code:'CAN 5', name:'Samuel Adekugbe', missing:false },
+  { group:'B', team:'Canada', flag:'🇨🇦', code:'CAN 6', name:'Richie Laryea', missing:false },
+  { group:'B', team:'Canada', flag:'🇨🇦', code:'CAN 7', name:'Ismaël Koné', missing:false },
+  { group:'B', team:'Canada', flag:'🇨🇦', code:'CAN 8', name:'Jonathan Osorio', missing:false },
+  { group:'B', team:'Canada', flag:'🇨🇦', code:'CAN 9', name:'Kamal Miller', missing:true },
+  { group:'B', team:'Canada', flag:'🇨🇦', code:'CAN 10', name:'Stephen Eustáquio', missing:false },
+  { group:'B', team:'Canada', flag:'🇨🇦', code:'CAN 11', name:'Derek Cornelius', missing:false },
+  { group:'B', team:'Canada', flag:'🇨🇦', code:'CAN 12', name:'Jacob Shaffelburg', missing:false },
+  { group:'B', team:'Canada', flag:'🇨🇦', code:'CAN 13', name:'Team Photo', missing:true },
+  { group:'B', team:'Canada', flag:'🇨🇦', code:'CAN 14', name:'Niko Shour', missing:false },
+  { group:'B', team:'Canada', flag:'🇨🇦', code:'CAN 15', name:'Mathieu Choinière', missing:true },
+  { group:'B', team:'Canada', flag:'🇨🇦', code:'CAN 16', name:'Liam Millar', missing:false },
+  { group:'B', team:'Canada', flag:'🇨🇦', code:'CAN 17', name:'Cyle Larin', missing:false },
+  { group:'B', team:'Canada', flag:'🇨🇦', code:'CAN 18', name:'Jonathan David', missing:false },
+  { group:'B', team:'Canada', flag:'🇨🇦', code:'CAN 19', name:'Tajon Buchanan', missing:false },
+  { group:'B', team:'Canada', flag:'🇨🇦', code:'CAN 20', name:'More Bombito', missing:false },
+
+  { group:'B', team:'Bosnia-Herzegovina', flag:'🇧🇦', code:'BIH 1', name:'Badge/Foil', missing:false },
+  { group:'B', team:'Bosnia-Herzegovina', flag:'🇧🇦', code:'BIH 2', name:'Nikola Vasilj', missing:false },
+  { group:'B', team:'Bosnia-Herzegovina', flag:'🇧🇦', code:'BIH 3', name:'Amar Dedić', missing:false },
+  { group:'B', team:'Bosnia-Herzegovina', flag:'🇧🇦', code:'BIH 4', name:'Sead Kolašinac', missing:false },
+  { group:'B', team:'Bosnia-Herzegovina', flag:'🇧🇦', code:'BIH 5', name:'Tarik Muharemović', missing:false },
+  { group:'B', team:'Bosnia-Herzegovina', flag:'🇧🇦', code:'BIH 6', name:'Nikad Mujakić', missing:false },
+  { group:'B', team:'Bosnia-Herzegovina', flag:'🇧🇦', code:'BIH 7', name:'Ivan Šunjić', missing:false },
+  { group:'B', team:'Bosnia-Herzegovina', flag:'🇧🇦', code:'BIH 8', name:'Nikola Katić', missing:false },
+  { group:'B', team:'Bosnia-Herzegovina', flag:'🇧🇦', code:'BIH 9', name:'Benjamin Tahirović', missing:true },
+  { group:'B', team:'Bosnia-Herzegovina', flag:'🇧🇦', code:'BIH 10', name:'Armin Gigović', missing:true },
+  { group:'B', team:'Bosnia-Herzegovina', flag:'🇧🇦', code:'BIH 11', name:'Amir Hadžiahmetović', missing:false },
+  { group:'B', team:'Bosnia-Herzegovina', flag:'🇧🇦', code:'BIH 12', name:'Ivan Bašić', missing:true },
+  { group:'B', team:'Bosnia-Herzegovina', flag:'🇧🇦', code:'BIH 13', name:'Team Photo', missing:false },
+  { group:'B', team:'Bosnia-Herzegovina', flag:'🇧🇦', code:'BIH 14', name:'Dženis Burnić', missing:true },
+  { group:'B', team:'Bosnia-Herzegovina', flag:'🇧🇦', code:'BIH 15', name:'Edin Džeko', missing:false },
+  { group:'B', team:'Bosnia-Herzegovina', flag:'🇧🇦', code:'BIH 16', name:'Ermin Bičakčić', missing:false },
+  { group:'B', team:'Bosnia-Herzegovina', flag:'🇧🇦', code:'BIH 17', name:'Ermedin Demirović', missing:true },
+  { group:'B', team:'Bosnia-Herzegovina', flag:'🇧🇦', code:'BIH 18', name:'Amar Memić', missing:false },
+  { group:'B', team:'Bosnia-Herzegovina', flag:'🇧🇦', code:'BIH 19', name:'Samed Baždar', missing:true },
+  { group:'B', team:'Bosnia-Herzegovina', flag:'🇧🇦', code:'BIH 20', name:'Haris Tabaković', missing:false },
+
+  { group:'B', team:'Qatar', flag:'🇶🇦', code:'QAT 1', name:'Badge/Foil', missing:true },
+  { group:'B', team:'Qatar', flag:'🇶🇦', code:'QAT 2', name:'Meshaal Barsham', missing:false },
+  { group:'B', team:'Qatar', flag:'🇶🇦', code:'QAT 3', name:'Sultan Albrakki', missing:false },
+  { group:'B', team:'Qatar', flag:'🇶🇦', code:'QAT 4', name:'Lucas Mendes', missing:false },
+  { group:'B', team:'Qatar', flag:'🇶🇦', code:'QAT 5', name:'Roman Ahmed', missing:false },
+  { group:'B', team:'Qatar', flag:'🇶🇦', code:'QAT 6', name:'Bualem Khoukhi', missing:false },
+  { group:'B', team:'Qatar', flag:'🇶🇦', code:'QAT 7', name:'Pedro Miguel', missing:false },
+  { group:'B', team:'Qatar', flag:'🇶🇦', code:'QAT 8', name:'Tarek Salman', missing:false },
+  { group:'B', team:'Qatar', flag:'🇶🇦', code:'QAT 9', name:'Mohammed Mannai', missing:false },
+  { group:'B', team:'Qatar', flag:'🇶🇦', code:'QAT 10', name:'Karim Boudiaf', missing:false },
+  { group:'B', team:'Qatar', flag:'🇶🇦', code:'QAT 11', name:'Hassan Madibo', missing:false },
+  { group:'B', team:'Qatar', flag:'🇶🇦', code:'QAT 12', name:'Hamed Fateh', missing:false },
+  { group:'B', team:'Qatar', flag:'🇶🇦', code:'QAT 13', name:'Team Photo', missing:false },
+  { group:'B', team:'Qatar', flag:'🇶🇦', code:'QAT 14', name:'Mohammed Waad', missing:false },
+  { group:'B', team:'Qatar', flag:'🇶🇦', code:'QAT 15', name:'Abdelaziz Hatem', missing:false },
+  { group:'B', team:'Qatar', flag:'🇶🇦', code:'QAT 16', name:'Hassan Al-Haydos', missing:false },
+  { group:'B', team:'Qatar', flag:'🇶🇦', code:'QAT 17', name:'Edmilson Junior', missing:false },
+  { group:'B', team:'Qatar', flag:'🇶🇦', code:'QAT 18', name:'Akram Hassan Afif', missing:true },
+  { group:'B', team:'Qatar', flag:'🇶🇦', code:'QAT 19', name:'Ahmed Al-Ganemi', missing:false },
+  { group:'B', team:'Qatar', flag:'🇶🇦', code:'QAT 20', name:'Almoez Ali', missing:false },
+
+  { group:'B', team:'Switzerland', flag:'🇨🇭', code:'SUI 1', name:'Badge/Foil', missing:false },
+  { group:'B', team:'Switzerland', flag:'🇨🇭', code:'SUI 2', name:'Gregor Kobel', missing:false },
+  { group:'B', team:'Switzerland', flag:'🇨🇭', code:'SUI 3', name:'Yvan Mvoogo', missing:false },
+  { group:'B', team:'Switzerland', flag:'🇨🇭', code:'SUI 4', name:'Manuel Akanji', missing:false },
+  { group:'B', team:'Switzerland', flag:'🇨🇭', code:'SUI 5', name:'Ricardo Rodríguez', missing:false },
+  { group:'B', team:'Switzerland', flag:'🇨🇭', code:'SUI 6', name:'Nico Elvedi', missing:false },
+  { group:'B', team:'Switzerland', flag:'🇨🇭', code:'SUI 7', name:'Aurèle Amenda', missing:true },
+  { group:'B', team:'Switzerland', flag:'🇨🇭', code:'SUI 8', name:'Remo Freuler', missing:false },
+  { group:'B', team:'Switzerland', flag:'🇨🇭', code:'SUI 9', name:'Fabian Rieder', missing:false },
+  { group:'B', team:'Switzerland', flag:'🇨🇭', code:'SUI 10', name:'Ardon Jashari', missing:false },
+  { group:'B', team:'Switzerland', flag:'🇨🇭', code:'SUI 11', name:'Silvan Widmer', missing:false },
+  { group:'B', team:'Switzerland', flag:'🇨🇭', code:'SUI 12', name:'Gran Xhaka', missing:false },
+  { group:'B', team:'Switzerland', flag:'🇨🇭', code:'SUI 13', name:'Team Photo', missing:true },
+  { group:'B', team:'Switzerland', flag:'🇨🇭', code:'SUI 14', name:'Denis Zakaria', missing:false },
+  { group:'B', team:'Switzerland', flag:'🇨🇭', code:'SUI 15', name:'Johan Manzambi', missing:false },
+  { group:'B', team:'Switzerland', flag:'🇨🇭', code:'SUI 16', name:'Xherdan Shaqiri', missing:false },
+  { group:'B', team:'Switzerland', flag:'🇨🇭', code:'SUI 17', name:'Jan Paul van Hecke', missing:false },
+  { group:'B', team:'Switzerland', flag:'🇨🇭', code:'SUI 18', name:'Rubén Vargas', missing:true },
+  { group:'B', team:'Switzerland', flag:'🇨🇭', code:'SUI 19', name:'Dan Ndove', missing:false },
+  { group:'B', team:'Switzerland', flag:'🇨🇭', code:'SUI 20', name:'Zeki Amdouni', missing:true },
+  { group:'B', team:'Switzerland', flag:'🇨🇭', code:'SUI 21', name:'Tjami Reijnders', missing:false },
+  { group:'B', team:'Switzerland', flag:'🇨🇭', code:'SUI 22', name:'Michel Aebischer', missing:false },
+  { group:'B', team:'Switzerland', flag:'🇨🇭', code:'SUI 23', name:'Breel Embolo', missing:false },
+
+  // ── GROUP C ──────────────────────────────────────────────
+  { group:'C', team:'Brazil', flag:'🇧🇷', code:'BRA 1', name:'Badge/Foil', missing:false },
+  { group:'C', team:'Brazil', flag:'🇧🇷', code:'BRA 2', name:'Alisson', missing:false },
+  { group:'C', team:'Brazil', flag:'🇧🇷', code:'BRA 3', name:'Bento', missing:false },
+  { group:'C', team:'Brazil', flag:'🇧🇷', code:'BRA 4', name:'Marquinhos', missing:false },
+  { group:'C', team:'Brazil', flag:'🇧🇷', code:'BRA 5', name:'Éder Militão', missing:false },
+  { group:'C', team:'Brazil', flag:'🇧🇷', code:'BRA 6', name:'Gabriel Magalhães', missing:false },
+  { group:'C', team:'Brazil', flag:'🇧🇷', code:'BRA 7', name:'Danilo', missing:false },
+  { group:'C', team:'Brazil', flag:'🇧🇷', code:'BRA 8', name:'Wesley', missing:false },
+  { group:'C', team:'Brazil', flag:'🇧🇷', code:'BRA 9', name:'Lucas Paquetá', missing:false },
+  { group:'C', team:'Brazil', flag:'🇧🇷', code:'BRA 10', name:'Casemiro', missing:false },
+  { group:'C', team:'Brazil', flag:'🇧🇷', code:'BRA 11', name:'Bruno Guimarães', missing:false },
+  { group:'C', team:'Brazil', flag:'🇧🇷', code:'BRA 12', name:'Luiz Henrique', missing:true },
+  { group:'C', team:'Brazil', flag:'🇧🇷', code:'BRA 13', name:'Team Photo', missing:false },
+  { group:'C', team:'Brazil', flag:'🇧🇷', code:'BRA 14', name:'Vinícius Júnior', missing:false },
+  { group:'C', team:'Brazil', flag:'🇧🇷', code:'BRA 15', name:'Rodrygo', missing:false },
+  { group:'C', team:'Brazil', flag:'🇧🇷', code:'BRA 16', name:'João Pedro', missing:false },
+  { group:'C', team:'Brazil', flag:'🇧🇷', code:'BRA 17', name:'Matheus Cunha', missing:false },
+  { group:'C', team:'Brazil', flag:'🇧🇷', code:'BRA 18', name:'Gabriel Martinelli', missing:false },
+  { group:'C', team:'Brazil', flag:'🇧🇷', code:'BRA 19', name:'Raphinha', missing:false },
+  { group:'C', team:'Brazil', flag:'🇧🇷', code:'BRA 20', name:'Estêvão', missing:false },
+
+  { group:'C', team:'Morocco', flag:'🇲🇦', code:'MAR 1', name:'Badge/Foil', missing:true },
+  { group:'C', team:'Morocco', flag:'🇲🇦', code:'MAR 2', name:'Yassine Bounou', missing:true },
+  { group:'C', team:'Morocco', flag:'🇲🇦', code:'MAR 3', name:'Munir El Kajoui', missing:false },
+  { group:'C', team:'Morocco', flag:'🇲🇦', code:'MAR 4', name:'Achraf Hakimi', missing:false },
+  { group:'C', team:'Morocco', flag:'🇲🇦', code:'MAR 5', name:'Nayef Aguerd', missing:false },
+  { group:'C', team:'Morocco', flag:'🇲🇦', code:'MAR 6', name:'Noussair Mazraoui', missing:false },
+  { group:'C', team:'Morocco', flag:'🇲🇦', code:'MAR 7', name:'Romain Saïss', missing:true },
+  { group:'C', team:'Morocco', flag:'🇲🇦', code:'MAR 8', name:'Azzedine Ounahi', missing:false },
+  { group:'C', team:'Morocco', flag:'🇲🇦', code:'MAR 9', name:'Adam Masina', missing:true },
+  { group:'C', team:'Morocco', flag:'🇲🇦', code:'MAR 10', name:'Jawad El Yamiq', missing:false },
+  { group:'C', team:'Morocco', flag:'🇲🇦', code:'MAR 11', name:'Bilal El Khannous', missing:false },
+  { group:'C', team:'Morocco', flag:'🇲🇦', code:'MAR 12', name:'Elisse Ben Seghir', missing:true },
+  { group:'C', team:'Morocco', flag:'🇲🇦', code:'MAR 13', name:'Team Photo', missing:false },
+  { group:'C', team:'Morocco', flag:'🇲🇦', code:'MAR 14', name:'Sofyan Amrabat', missing:false },
+  { group:'C', team:'Morocco', flag:'🇲🇦', code:'MAR 15', name:'Ismael Saibari', missing:true },
+  { group:'C', team:'Morocco', flag:'🇲🇦', code:'MAR 16', name:'Youssef En-Nesyri', missing:false },
+  { group:'C', team:'Morocco', flag:'🇲🇦', code:'MAR 17', name:'Amine Ezzalzouli', missing:false },
+  { group:'C', team:'Morocco', flag:'🇲🇦', code:'MAR 18', name:'Soufiane Rahimi', missing:true },
+  { group:'C', team:'Morocco', flag:'🇲🇦', code:'MAR 19', name:'Brahim Díaz', missing:false },
+  { group:'C', team:'Morocco', flag:'🇲🇦', code:'MAR 20', name:'Ayoub El Kaabi', missing:false },
+
+  { group:'C', team:'Haiti', flag:'🇭🇹', code:'HAI 1', name:'Badge/Foil', missing:false },
+  { group:'C', team:'Haiti', flag:'🇭🇹', code:'HAI 2', name:'Johnny Placide', missing:false },
+  { group:'C', team:'Haiti', flag:'🇭🇹', code:'HAI 3', name:'Carlens Arcus', missing:false },
+  { group:'C', team:'Haiti', flag:'🇭🇹', code:'HAI 4', name:'Martin Expérience', missing:false },
+  { group:'C', team:'Haiti', flag:'🇭🇹', code:'HAI 5', name:'Jean-Kevin Duverné', missing:false },
+  { group:'C', team:'Haiti', flag:'🇭🇹', code:'HAI 6', name:'Ricardo Adé', missing:false },
+  { group:'C', team:'Haiti', flag:'🇭🇹', code:'HAI 7', name:'Danley Jean Jacques', missing:false },
+  { group:'C', team:'Haiti', flag:'🇭🇹', code:'HAI 8', name:'Jean-Richer Bellegarde', missing:false },
+  { group:'C', team:'Haiti', flag:'🇭🇹', code:'HAI 9', name:'Duc Lacroix', missing:false },
+  { group:'C', team:'Haiti', flag:'🇭🇹', code:'HAI 10', name:'Darven Metusala', missing:false },
+  { group:'C', team:'Haiti', flag:'🇭🇹', code:'HAI 11', name:'Hawes Delcroix', missing:false },
+  { group:'C', team:'Haiti', flag:'🇭🇹', code:'HAI 12', name:'Leverton Pierre', missing:false },
+  { group:'C', team:'Haiti', flag:'🇭🇹', code:'HAI 13', name:'Team Photo', missing:true },
+  { group:'C', team:'Haiti', flag:'🇭🇹', code:'HAI 14', name:'Christopher Attys', missing:false },
+  { group:'C', team:'Haiti', flag:'🇭🇹', code:'HAI 15', name:'Derrick Etienne Jr', missing:false },
+  { group:'C', team:'Haiti', flag:'🇭🇹', code:'HAI 16', name:'José Casimir', missing:false },
+  { group:'C', team:'Haiti', flag:'🇭🇹', code:'HAI 17', name:'Ruben Providence', missing:false },
+  { group:'C', team:'Haiti', flag:'🇭🇹', code:'HAI 18', name:'Duckens Nazon', missing:false },
+  { group:'C', team:'Haiti', flag:'🇭🇹', code:'HAI 19', name:'Loucius Deedson', missing:false },
+  { group:'C', team:'Haiti', flag:'🇭🇹', code:'HAI 20', name:'Frantzin Pierrot', missing:false },
+
+  { group:'C', team:'Scotland', flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', code:'SCO 1', name:'Badge/Foil', missing:false },
+  { group:'C', team:'Scotland', flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', code:'SCO 2', name:'Angus Gunn', missing:true },
+  { group:'C', team:'Scotland', flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', code:'SCO 3', name:'Jack Hendry', missing:true },
+  { group:'C', team:'Scotland', flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', code:'SCO 4', name:'Keiran Tierney', missing:false },
+  { group:'C', team:'Scotland', flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', code:'SCO 5', name:'Aaron Hickey', missing:true },
+  { group:'C', team:'Scotland', flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', code:'SCO 6', name:'Andrew Robertson', missing:false },
+  { group:'C', team:'Scotland', flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', code:'SCO 7', name:'Scott Mctominay', missing:false },
+  { group:'C', team:'Scotland', flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', code:'SCO 8', name:'Billy Gilmour', missing:false },
+  { group:'C', team:'Scotland', flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', code:'SCO 9', name:'Anthony Ralston', missing:true },
+  { group:'C', team:'Scotland', flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', code:'SCO 10', name:'Lewis Ferguson', missing:false },
+  { group:'C', team:'Scotland', flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', code:'SCO 11', name:'Ryan Christie', missing:false },
+  { group:'C', team:'Scotland', flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', code:'SCO 12', name:'Kenny McLean', missing:false },
+  { group:'C', team:'Scotland', flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', code:'SCO 13', name:'Team Photo', missing:false },
+  { group:'C', team:'Scotland', flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', code:'SCO 14', name:'John McGinn', missing:false },
+  { group:'C', team:'Scotland', flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', code:'SCO 15', name:'Scott McKenna', missing:false },
+  { group:'C', team:'Scotland', flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', code:'SCO 16', name:'John Souttar', missing:false },
+  { group:'C', team:'Scotland', flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', code:'SCO 17', name:'Grant Hanley', missing:false },
+  { group:'C', team:'Scotland', flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', code:'SCO 18', name:'Lyndon Dykes', missing:false },
+  { group:'C', team:'Scotland', flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', code:'SCO 19', name:'Ché Adams', missing:true },
+  { group:'C', team:'Scotland', flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', code:'SCO 20', name:'Ben Doak', missing:false },
+
+  // ── GROUP D ──────────────────────────────────────────────
+  { group:'D', team:'USA', flag:'🇺🇸', code:'USA 1', name:'Badge/Foil', missing:false },
+  { group:'D', team:'USA', flag:'🇺🇸', code:'USA 2', name:'Matt Freese', missing:false },
+  { group:'D', team:'USA', flag:'🇺🇸', code:'USA 3', name:'Chris Richards', missing:false },
+  { group:'D', team:'USA', flag:'🇺🇸', code:'USA 4', name:'Tim Ream', missing:false },
+  { group:'D', team:'USA', flag:'🇺🇸', code:'USA 5', name:'Mark McKenzie', missing:false },
+  { group:'D', team:'USA', flag:'🇺🇸', code:'USA 6', name:'Alex Freeman', missing:true },
+  { group:'D', team:'USA', flag:'🇺🇸', code:'USA 7', name:'Antonee Robinson', missing:false },
+  { group:'D', team:'USA', flag:'🇺🇸', code:'USA 8', name:'Tyler Adams', missing:false },
+  { group:'D', team:'USA', flag:'🇺🇸', code:'USA 9', name:'Tanner Tessmann', missing:false },
+  { group:'D', team:'USA', flag:'🇺🇸', code:'USA 10', name:'Weston McKennie', missing:false },
+  { group:'D', team:'USA', flag:'🇺🇸', code:'USA 11', name:'Cristian Roldan', missing:false },
+  { group:'D', team:'USA', flag:'🇺🇸', code:'USA 12', name:'Timothy Weah', missing:false },
+  { group:'D', team:'USA', flag:'🇺🇸', code:'USA 13', name:'Team Photo', missing:false },
+  { group:'D', team:'USA', flag:'🇺🇸', code:'USA 14', name:'Diego Luna', missing:true },
+  { group:'D', team:'USA', flag:'🇺🇸', code:'USA 15', name:'Malik Tillman', missing:false },
+  { group:'D', team:'USA', flag:'🇺🇸', code:'USA 16', name:'Christian Pulisic', missing:false },
+  { group:'D', team:'USA', flag:'🇺🇸', code:'USA 17', name:'Brenden Aaronson', missing:false },
+  { group:'D', team:'USA', flag:'🇺🇸', code:'USA 18', name:'Folarin Balogun', missing:false },
+  { group:'D', team:'USA', flag:'🇺🇸', code:'USA 19', name:'Haji Wright', missing:true },
+  { group:'D', team:'USA', flag:'🇺🇸', code:'USA 20', name:'Ricardo Pepi', missing:false },
+
+  { group:'D', team:'Paraguay', flag:'🇵🇾', code:'PAR 1', name:'Badge/Foil', missing:false },
+  { group:'D', team:'Paraguay', flag:'🇵🇾', code:'PAR 2', name:'Roberto Fernández', missing:true },
+  { group:'D', team:'Paraguay', flag:'🇵🇾', code:'PAR 3', name:'Orlando Gill', missing:false },
+  { group:'D', team:'Paraguay', flag:'🇵🇾', code:'PAR 4', name:'Gustavo Gómez', missing:false },
+  { group:'D', team:'Paraguay', flag:'🇵🇾', code:'PAR 5', name:'Fabián Balbuena', missing:false },
+  { group:'D', team:'Paraguay', flag:'🇵🇾', code:'PAR 6', name:'Juan José Cáceres', missing:false },
+  { group:'D', team:'Paraguay', flag:'🇵🇾', code:'PAR 7', name:'Damián Bobadilla', missing:false },
+  { group:'D', team:'Paraguay', flag:'🇵🇾', code:'PAR 8', name:'Andrés Cubas', missing:false },
+  { group:'D', team:'Paraguay', flag:'🇵🇾', code:'PAR 9', name:'Omar Alderete', missing:false },
+  { group:'D', team:'Paraguay', flag:'🇵🇾', code:'PAR 10', name:'Jóner Alonso', missing:false },
+  { group:'D', team:'Paraguay', flag:'🇵🇾', code:'PAR 11', name:'Matías Villasanti', missing:false },
+  { group:'D', team:'Paraguay', flag:'🇵🇾', code:'PAR 12', name:'Diego Gómez', missing:false },
+  { group:'D', team:'Paraguay', flag:'🇵🇾', code:'PAR 13', name:'Team Photo (Qualifiers)', missing:false },
+  { group:'D', team:'Paraguay', flag:'🇵🇾', code:'PAR 14', name:'Mateo Galarza Fonda', missing:false },
+  { group:'D', team:'Paraguay', flag:'🇵🇾', code:'PAR 15', name:'Julio Enciso', missing:false },
+  { group:'D', team:'Paraguay', flag:'🇵🇾', code:'PAR 16', name:'Alejandro Romero Gamarra', missing:false },
+  { group:'D', team:'Paraguay', flag:'🇵🇾', code:'PAR 17', name:'Miguel Almirón', missing:false },
+  { group:'D', team:'Paraguay', flag:'🇵🇾', code:'PAR 18', name:'Ramón Sosa', missing:true },
+  { group:'D', team:'Paraguay', flag:'🇵🇾', code:'PAR 19', name:'Ángel Romero', missing:true },
+  { group:'D', team:'Paraguay', flag:'🇵🇾', code:'PAR 20', name:'Antonio Sanabria', missing:false },
+
+  { group:'D', team:'Australia', flag:'🇦🇺', code:'AUS 1', name:'Badge/Foil', missing:false },
+  { group:'D', team:'Australia', flag:'🇦🇺', code:'AUS 2', name:'Mathew Ryan', missing:true },
+  { group:'D', team:'Australia', flag:'🇦🇺', code:'AUS 3', name:'Joe Gauci', missing:false },
+  { group:'D', team:'Australia', flag:'🇦🇺', code:'AUS 4', name:'Harry Souttar', missing:true },
+  { group:'D', team:'Australia', flag:'🇦🇺', code:'AUS 5', name:'Alessandro Circati', missing:true },
+  { group:'D', team:'Australia', flag:'🇦🇺', code:'AUS 6', name:'Jordan Bos', missing:true },
+  { group:'D', team:'Australia', flag:'🇦🇺', code:'AUS 7', name:'Aziz Behich', missing:false },
+  { group:'D', team:'Australia', flag:'🇦🇺', code:'AUS 8', name:'Cameron Burgess', missing:false },
+  { group:'D', team:'Australia', flag:'🇦🇺', code:'AUS 9', name:'Lewis Miller', missing:true },
+  { group:'D', team:'Australia', flag:'🇦🇺', code:'AUS 10', name:'Milos Degenek', missing:false },
+  { group:'D', team:'Australia', flag:'🇦🇺', code:'AUS 11', name:'Jackson Irvine', missing:false },
+  { group:'D', team:'Australia', flag:'🇦🇺', code:'AUS 12', name:'Riley McGree', missing:false },
+  { group:'D', team:'Australia', flag:'🇦🇺', code:'AUS 13', name:'Team Photo', missing:true },
+  { group:'D', team:'Australia', flag:'🇦🇺', code:'AUS 14', name:'Aiden O\'Neill', missing:false },
+  { group:'D', team:'Australia', flag:'🇦🇺', code:'AUS 15', name:'Connor Metcalfe', missing:false },
+  { group:'D', team:'Australia', flag:'🇦🇺', code:'AUS 16', name:'Patrick Yazbek', missing:false },
+  { group:'D', team:'Australia', flag:'🇦🇺', code:'AUS 17', name:'Craig Goodwin', missing:false },
+  { group:'D', team:'Australia', flag:'🇦🇺', code:'AUS 18', name:'Kusini Yengi', missing:false },
+  { group:'D', team:'Australia', flag:'🇦🇺', code:'AUS 19', name:'Nestory Irankunda', missing:false },
+  { group:'D', team:'Australia', flag:'🇦🇺', code:'AUS 20', name:'Mohamed Touré', missing:false },
+
+  { group:'D', team:'Türkiye', flag:'🇹🇷', code:'TUR 1', name:'Badge/Foil', missing:false },
+  { group:'D', team:'Türkiye', flag:'🇹🇷', code:'TUR 2', name:'Uğurcan Çakır', missing:false },
+  { group:'D', team:'Türkiye', flag:'🇹🇷', code:'TUR 3', name:'Mert Müldür', missing:false },
+  { group:'D', team:'Türkiye', flag:'🇹🇷', code:'TUR 4', name:'Zeki Çelik', missing:false },
+  { group:'D', team:'Türkiye', flag:'🇹🇷', code:'TUR 5', name:'Abdülkerim Bardakcı', missing:false },
+  { group:'D', team:'Türkiye', flag:'🇹🇷', code:'TUR 6', name:'Çağlar Söyüncü', missing:false },
+  { group:'D', team:'Türkiye', flag:'🇹🇷', code:'TUR 7', name:'Hakan Çalhanoğlu', missing:false },
+  { group:'D', team:'Türkiye', flag:'🇹🇷', code:'TUR 8', name:'Orkun Kökcü', missing:false },
+  { group:'D', team:'Türkiye', flag:'🇹🇷', code:'TUR 9', name:'Kaan Ayhan', missing:true },
+  { group:'D', team:'Türkiye', flag:'🇹🇷', code:'TUR 10', name:'İsmail Yüksek', missing:false },
+  { group:'D', team:'Türkiye', flag:'🇹🇷', code:'TUR 11', name:'Merih Demiral', missing:false },
+  { group:'D', team:'Türkiye', flag:'🇹🇷', code:'TUR 12', name:'Ferdi Kadıoğlu', missing:false },
+  { group:'D', team:'Türkiye', flag:'🇹🇷', code:'TUR 13', name:'Team Photo', missing:true },
+  { group:'D', team:'Türkiye', flag:'🇹🇷', code:'TUR 14', name:'Arda Güler', missing:false },
+  { group:'D', team:'Türkiye', flag:'🇹🇷', code:'TUR 15', name:'İrfan Can Kahveci', missing:false },
+  { group:'D', team:'Türkiye', flag:'🇹🇷', code:'TUR 16', name:'Yunus Akgün', missing:true },
+  { group:'D', team:'Türkiye', flag:'🇹🇷', code:'TUR 17', name:'Barış Alper Yılmaz', missing:false },
+  { group:'D', team:'Türkiye', flag:'🇹🇷', code:'TUR 18', name:'Kerem Aktürkoğlu', missing:false },
+  { group:'D', team:'Türkiye', flag:'🇹🇷', code:'TUR 19', name:'Can Uzun', missing:false },
+  { group:'D', team:'Türkiye', flag:'🇹🇷', code:'TUR 20', name:'Kenan Yıldız', missing:true },
+
+  // ── GROUP E ──────────────────────────────────────────────
+  { group:'E', team:'Germany', flag:'🇩🇪', code:'GER 1', name:'Badge/Foil', missing:false },
+  { group:'E', team:'Germany', flag:'🇩🇪', code:'GER 2', name:'Marc-André ter Stegen', missing:false },
+  { group:'E', team:'Germany', flag:'🇩🇪', code:'GER 3', name:'Jonathan Tah', missing:false },
+  { group:'E', team:'Germany', flag:'🇩🇪', code:'GER 4', name:'David Raum', missing:false },
+  { group:'E', team:'Germany', flag:'🇩🇪', code:'GER 5', name:'Nico Schlotterbeck', missing:false },
+  { group:'E', team:'Germany', flag:'🇩🇪', code:'GER 6', name:'Antonio Rüdiger', missing:false },
+  { group:'E', team:'Germany', flag:'🇩🇪', code:'GER 7', name:'Florian Wirtz', missing:false },
+  { group:'E', team:'Germany', flag:'🇩🇪', code:'GER 8', name:'Ridle Baku', missing:true },
+  { group:'E', team:'Germany', flag:'🇩🇪', code:'GER 9', name:'Maximilian Mittelstädt', missing:false },
+  { group:'E', team:'Germany', flag:'🇩🇪', code:'GER 10', name:'Joshua Kimmich', missing:false },
+  { group:'E', team:'Germany', flag:'🇩🇪', code:'GER 11', name:'Waldemar Anton', missing:false },
+  { group:'E', team:'Germany', flag:'🇩🇪', code:'GER 12', name:'Leon Goretzka', missing:false },
+  { group:'E', team:'Germany', flag:'🇩🇪', code:'GER 13', name:'Team Photo', missing:false },
+  { group:'E', team:'Germany', flag:'🇩🇪', code:'GER 14', name:'Jamal Musiala', missing:false },
+  { group:'E', team:'Germany', flag:'🇩🇪', code:'GER 15', name:'Serge Gnabry', missing:false },
+  { group:'E', team:'Germany', flag:'🇩🇪', code:'GER 16', name:'Felix Nmecha', missing:false },
+  { group:'E', team:'Germany', flag:'🇩🇪', code:'GER 17', name:'Kai Havertz', missing:true },
+  { group:'E', team:'Germany', flag:'🇩🇪', code:'GER 18', name:'Leroy Sané', missing:true },
+  { group:'E', team:'Germany', flag:'🇩🇪', code:'GER 19', name:'Karim Adeyemi', missing:false },
+  { group:'E', team:'Germany', flag:'🇩🇪', code:'GER 20', name:'Nick Woltemade', missing:false },
+
+  { group:'E', team:'Curaçao', flag:'🇨🇼', code:'CUW 1', name:'Badge/Foil', missing:false },
+  { group:'E', team:'Curaçao', flag:'🇨🇼', code:'CUW 2', name:'Eloy Room', missing:true },
+  { group:'E', team:'Curaçao', flag:'🇨🇼', code:'CUW 3', name:'Armando Obispo', missing:false },
+  { group:'E', team:'Curaçao', flag:'🇨🇼', code:'CUW 4', name:'Sherel Floranus', missing:false },
+  { group:'E', team:'Curaçao', flag:'🇨🇼', code:'CUW 5', name:'Jurën Gaari', missing:false },
+  { group:'E', team:'Curaçao', flag:'🇨🇼', code:'CUW 6', name:'Joshua Brenet', missing:false },
+  { group:'E', team:'Curaçao', flag:'🇨🇼', code:'CUW 7', name:'Roshon van Ejima', missing:false },
+  { group:'E', team:'Curaçao', flag:'🇨🇼', code:'CUW 8', name:'Shurany Sambo', missing:false },
+  { group:'E', team:'Curaçao', flag:'🇨🇼', code:'CUW 9', name:'Livano Comenencia', missing:true },
+  { group:'E', team:'Curaçao', flag:'🇨🇼', code:'CUW 10', name:'Godfried Roemeratoe', missing:false },
+  { group:'E', team:'Curaçao', flag:'🇨🇼', code:'CUW 11', name:'Leandro Bacuna', missing:false },
+  { group:'E', team:'Curaçao', flag:'🇨🇼', code:'CUW 12', name:'Leandro Bacuna', missing:false },
+  { group:'E', team:'Curaçao', flag:'🇨🇼', code:'CUW 13', name:'Team Photo', missing:false },
+  { group:'E', team:'Curaçao', flag:'🇨🇼', code:'CUW 14', name:'Tainth Chong', missing:false },
+  { group:'E', team:'Curaçao', flag:'🇨🇼', code:'CUW 15', name:'Kenji Gorré', missing:false },
+  { group:'E', team:'Curaçao', flag:'🇨🇼', code:'CUW 16', name:'José Margaritha', missing:false },
+  { group:'E', team:'Curaçao', flag:'🇨🇼', code:'CUW 17', name:'Jürgen Locadia', missing:false },
+  { group:'E', team:'Curaçao', flag:'🇨🇼', code:'CUW 18', name:'Jeremy Antonisse', missing:false },
+  { group:'E', team:'Curaçao', flag:'🇨🇼', code:'CUW 19', name:'Cermane Kastaneer', missing:false },
+  { group:'E', team:'Curaçao', flag:'🇨🇼', code:'CUW 20', name:'Soyle Hansen', missing:false },
+
+  { group:'E', team:"Côte d'Ivoire", flag:'🇨🇮', code:'CIV 1', name:'Badge/Foil', missing:false },
+  { group:'E', team:"Côte d'Ivoire", flag:'🇨🇮', code:'CIV 2', name:'Yahia Fofana', missing:false },
+  { group:'E', team:"Côte d'Ivoire", flag:'🇨🇮', code:'CIV 3', name:'Chelan Konan', missing:false },
+  { group:'E', team:"Côte d'Ivoire", flag:'🇨🇮', code:'CIV 4', name:'Wilfried Singo', missing:true },
+  { group:'E', team:"Côte d'Ivoire", flag:'🇨🇮', code:'CIV 5', name:'Oulou Kossounou', missing:false },
+  { group:'E', team:"Côte d'Ivoire", flag:'🇨🇮', code:'CIV 6', name:'Evan Ndicka', missing:false },
+  { group:'E', team:"Côte d'Ivoire", flag:'🇨🇮', code:'CIV 7', name:'Willy Boly', missing:false },
+  { group:'E', team:"Côte d'Ivoire", flag:'🇨🇮', code:'CIV 8', name:'Emmanuel Agbadou', missing:false },
+  { group:'E', team:"Côte d'Ivoire", flag:'🇨🇮', code:'CIV 9', name:'Dusame Diomande', missing:false },
+  { group:'E', team:"Côte d'Ivoire", flag:'🇨🇮', code:'CIV 10', name:'Franck Kessié', missing:false },
+  { group:'E', team:"Côte d'Ivoire", flag:'🇨🇮', code:'CIV 11', name:'Seko Fofana', missing:false },
+  { group:'E', team:"Côte d'Ivoire", flag:'🇨🇮', code:'CIV 12', name:'Ibrahim Sangaré', missing:false },
+  { group:'E', team:"Côte d'Ivoire", flag:'🇨🇮', code:'CIV 13', name:'Team Photo', missing:false },
+  { group:'E', team:"Côte d'Ivoire", flag:'🇨🇮', code:'CIV 14', name:'Jean-Philippe Gbamin', missing:false },
+  { group:'E', team:"Côte d'Ivoire", flag:'🇨🇮', code:'CIV 15', name:'Mao Diallo', missing:false },
+  { group:'E', team:"Côte d'Ivoire", flag:'🇨🇮', code:'CIV 16', name:'Sébastien Haller', missing:false },
+  { group:'E', team:"Côte d'Ivoire", flag:'🇨🇮', code:'CIV 17', name:'Simon Adingra', missing:false },
+  { group:'E', team:"Côte d'Ivoire", flag:'🇨🇮', code:'CIV 18', name:'Vah Diomandé', missing:false },
+  { group:'E', team:"Côte d'Ivoire", flag:'🇨🇮', code:'CIV 19', name:'Evan Guesgand', missing:false },
+  { group:'E', team:"Côte d'Ivoire", flag:'🇨🇮', code:'CIV 20', name:'Oumar Diakité', missing:true },
+
+  { group:'E', team:'Ecuador', flag:'🇪🇨', code:'ECU 1', name:'Badge/Foil', missing:false },
+  { group:'E', team:'Ecuador', flag:'🇪🇨', code:'ECU 2', name:'Hernán Galíndez', missing:false },
+  { group:'E', team:'Ecuador', flag:'🇪🇨', code:'ECU 3', name:'Gonzalo Valle', missing:true },
+  { group:'E', team:'Ecuador', flag:'🇪🇨', code:'ECU 4', name:'Pervis Hincapié', missing:false },
+  { group:'E', team:'Ecuador', flag:'🇪🇨', code:'ECU 5', name:'Piero Hincapié', missing:false },
+  { group:'E', team:'Ecuador', flag:'🇪🇨', code:'ECU 6', name:'William Pacho', missing:false },
+  { group:'E', team:'Ecuador', flag:'🇪🇨', code:'ECU 7', name:'Ángelo Preciado', missing:false },
+  { group:'E', team:'Ecuador', flag:'🇪🇨', code:'ECU 8', name:'Joel Ordóñez', missing:false },
+  { group:'E', team:'Ecuador', flag:'🇪🇨', code:'ECU 9', name:'Moisés Caicedo', missing:false },
+  { group:'E', team:'Ecuador', flag:'🇪🇨', code:'ECU 10', name:'Alan Franco', missing:false },
+  { group:'E', team:'Ecuador', flag:'🇪🇨', code:'ECU 11', name:'Kendry Páez', missing:true },
+  { group:'E', team:'Ecuador', flag:'🇪🇨', code:'ECU 12', name:'Pedro Vite', missing:false },
+  { group:'E', team:'Ecuador', flag:'🇪🇨', code:'ECU 13', name:'Team Photo', missing:false },
+  { group:'E', team:'Ecuador', flag:'🇪🇨', code:'ECU 14', name:'John Yeboah', missing:true },
+  { group:'E', team:'Ecuador', flag:'🇪🇨', code:'ECU 15', name:'Leonardo Campana', missing:false },
+  { group:'E', team:'Ecuador', flag:'🇪🇨', code:'ECU 16', name:'Gonzalo Plata', missing:true },
+  { group:'E', team:'Ecuador', flag:'🇪🇨', code:'ECU 17', name:'Nilson Angulo', missing:false },
+  { group:'E', team:'Ecuador', flag:'🇪🇨', code:'ECU 18', name:'Alan Minda', missing:true },
+  { group:'E', team:'Ecuador', flag:'🇪🇨', code:'ECU 19', name:'Kevin Rodríguez', missing:false },
+  { group:'E', team:'Ecuador', flag:'🇪🇨', code:'ECU 20', name:'Enner Valencia', missing:false },
+
+  // ── GROUP F ──────────────────────────────────────────────
+  { group:'F', team:'Netherlands', flag:'🇳🇱', code:'NED 1', name:'Badge/Foil', missing:false },
+  { group:'F', team:'Netherlands', flag:'🇳🇱', code:'NED 2', name:'Bart Verbruggen', missing:false },
+  { group:'F', team:'Netherlands', flag:'🇳🇱', code:'NED 3', name:'Virgil van Dijk', missing:false },
+  { group:'F', team:'Netherlands', flag:'🇳🇱', code:'NED 4', name:'Nicky van de Ven', missing:false },
+  { group:'F', team:'Netherlands', flag:'🇳🇱', code:'NED 5', name:'Jurriën Timber', missing:false },
+  { group:'F', team:'Netherlands', flag:'🇳🇱', code:'NED 6', name:'Denzel Dumfries', missing:true },
+  { group:'F', team:'Netherlands', flag:'🇳🇱', code:'NED 7', name:'Nathan Aké', missing:false },
+  { group:'F', team:'Netherlands', flag:'🇳🇱', code:'NED 8', name:'Jeremie Frimpong', missing:false },
+  { group:'F', team:'Netherlands', flag:'🇳🇱', code:'NED 9', name:'Jan Paul van Hecke', missing:false },
+  { group:'F', team:'Netherlands', flag:'🇳🇱', code:'NED 10', name:'Tjami Reijnders', missing:false },
+  { group:'F', team:'Netherlands', flag:'🇳🇱', code:'NED 11', name:'Ryan Gravenberch', missing:true },
+  { group:'F', team:'Netherlands', flag:'🇳🇱', code:'NED 12', name:'Tijdmers Koopmeiners', missing:false },
+  { group:'F', team:'Netherlands', flag:'🇳🇱', code:'NED 13', name:'Team Photo', missing:true },
+  { group:'F', team:'Netherlands', flag:'🇳🇱', code:'NED 14', name:'Frenkie de Jong', missing:false },
+  { group:'F', team:'Netherlands', flag:'🇳🇱', code:'NED 15', name:'Xavi Simons', missing:false },
+  { group:'F', team:'Netherlands', flag:'🇳🇱', code:'NED 16', name:'Justin Kluivert', missing:true },
+  { group:'F', team:'Netherlands', flag:'🇳🇱', code:'NED 17', name:'Memphis Depay', missing:true },
+  { group:'F', team:'Netherlands', flag:'🇳🇱', code:'NED 18', name:'Donyell Malen', missing:false },
+  { group:'F', team:'Netherlands', flag:'🇳🇱', code:'NED 19', name:'Wout Weghorst', missing:false },
+  { group:'F', team:'Netherlands', flag:'🇳🇱', code:'NED 20', name:'Cody Gakpo', missing:false },
+
+  { group:'F', team:'Japan', flag:'🇯🇵', code:'JPN 1', name:'Badge/Foil', missing:false },
+  { group:'F', team:'Japan', flag:'🇯🇵', code:'JPN 2', name:'Zion Suzuki', missing:false },
+  { group:'F', team:'Japan', flag:'🇯🇵', code:'JPN 3', name:'Henry Heroi Mochidzuki', missing:false },
+  { group:'F', team:'Japan', flag:'🇯🇵', code:'JPN 4', name:'Ayumi Seko', missing:false },
+  { group:'F', team:'Japan', flag:'🇯🇵', code:'JPN 5', name:'Araragi Suzuki', missing:false },
+  { group:'F', team:'Japan', flag:'🇯🇵', code:'JPN 6', name:'Shogo Taniguchi', missing:false },
+  { group:'F', team:'Japan', flag:'🇯🇵', code:'JPN 7', name:'Tsuyoshi Watanabe', missing:false },
+  { group:'F', team:'Japan', flag:'🇯🇵', code:'JPN 8', name:'Kaoru Mitoma', missing:false },
+  { group:'F', team:'Japan', flag:'🇯🇵', code:'JPN 9', name:'Yuki Soma', missing:false },
+  { group:'F', team:'Japan', flag:'🇯🇵', code:'JPN 10', name:'Ao Tanaka', missing:false },
+  { group:'F', team:'Japan', flag:'🇯🇵', code:'JPN 11', name:'Daichi Kamada', missing:true },
+  { group:'F', team:'Japan', flag:'🇯🇵', code:'JPN 12', name:'Takefusa Kubo', missing:false },
+  { group:'F', team:'Japan', flag:'🇯🇵', code:'JPN 13', name:'Team Photo', missing:false },
+  { group:'F', team:'Japan', flag:'🇯🇵', code:'JPN 14', name:'Ritsu Doan', missing:false },
+  { group:'F', team:'Japan', flag:'🇯🇵', code:'JPN 15', name:'Keito Nakamura', missing:true },
+  { group:'F', team:'Japan', flag:'🇯🇵', code:'JPN 16', name:'Takaru Minamino', missing:false },
+  { group:'F', team:'Japan', flag:'🇯🇵', code:'JPN 17', name:'Shito Machino', missing:false },
+  { group:'F', team:'Japan', flag:'🇯🇵', code:'JPN 18', name:'Junya Ito', missing:false },
+  { group:'F', team:'Japan', flag:'🇯🇵', code:'JPN 19', name:'Koji Ogawa', missing:false },
+  { group:'F', team:'Japan', flag:'🇯🇵', code:'JPN 20', name:'Anze Ueda', missing:false },
+
+  { group:'F', team:'Sweden', flag:'🇸🇪', code:'SWE 1', name:'Badge/Foil', missing:true },
+  { group:'F', team:'Sweden', flag:'🇸🇪', code:'SWE 2', name:'Viktor Johansson', missing:false },
+  { group:'F', team:'Sweden', flag:'🇸🇪', code:'SWE 3', name:'Isak Hien', missing:false },
+  { group:'F', team:'Sweden', flag:'🇸🇪', code:'SWE 4', name:'Gabriel Gudmundsson', missing:false },
+  { group:'F', team:'Sweden', flag:'🇸🇪', code:'SWE 5', name:'Emil Holm', missing:false },
+  { group:'F', team:'Sweden', flag:'🇸🇪', code:'SWE 6', name:'Victor Nilsson Lindelöf', missing:false },
+  { group:'F', team:'Sweden', flag:'🇸🇪', code:'SWE 7', name:'Gustaf Lagerbielke', missing:true },
+  { group:'F', team:'Sweden', flag:'🇸🇪', code:'SWE 8', name:'Lucas Bergvall', missing:false },
+  { group:'F', team:'Sweden', flag:'🇸🇪', code:'SWE 9', name:'Hugo Larsson', missing:false },
+  { group:'F', team:'Sweden', flag:'🇸🇪', code:'SWE 10', name:'Jesper Karlström', missing:true },
+  { group:'F', team:'Sweden', flag:'🇸🇪', code:'SWE 11', name:'Valir Avari', missing:false },
+  { group:'F', team:'Sweden', flag:'🇸🇪', code:'SWE 12', name:'Mattias Svanberg', missing:false },
+  { group:'F', team:'Sweden', flag:'🇸🇪', code:'SWE 13', name:'Team Photo', missing:false },
+  { group:'F', team:'Sweden', flag:'🇸🇪', code:'SWE 14', name:'Daniel Svensson', missing:false },
+  { group:'F', team:'Sweden', flag:'🇸🇪', code:'SWE 15', name:'Ken Sema', missing:false },
+  { group:'F', team:'Sweden', flag:'🇸🇪', code:'SWE 16', name:'Sébastien Bardjia', missing:false },
+  { group:'F', team:'Sweden', flag:'🇸🇪', code:'SWE 17', name:'Dejan Kulusevski', missing:false },
+  { group:'F', team:'Sweden', flag:'🇸🇪', code:'SWE 18', name:'Anthony Elanga', missing:false },
+  { group:'F', team:'Sweden', flag:'🇸🇪', code:'SWE 19', name:'Alexander Isak', missing:false },
+  { group:'F', team:'Sweden', flag:'🇸🇪', code:'SWE 20', name:'Viktor Gyökeres', missing:false },
+
+  { group:'F', team:'Tunisia', flag:'🇹🇳', code:'TUN 1', name:'Badge/Foil', missing:false },
+  { group:'F', team:'Tunisia', flag:'🇹🇳', code:'TUN 2', name:'Bechir Ben Saïd', missing:false },
+  { group:'F', team:'Tunisia', flag:'🇹🇳', code:'TUN 3', name:'Aymen Dahmen', missing:false },
+  { group:'F', team:'Tunisia', flag:'🇹🇳', code:'TUN 4', name:'Wajdi Valery', missing:false },
+  { group:'F', team:'Tunisia', flag:'🇹🇳', code:'TUN 5', name:'Montassar Talbi', missing:true },
+  { group:'F', team:'Tunisia', flag:'🇹🇳', code:'TUN 6', name:'Yassine Mériah', missing:true },
+  { group:'F', team:'Tunisia', flag:'🇹🇳', code:'TUN 7', name:'Ali Abdi', missing:false },
+  { group:'F', team:'Tunisia', flag:'🇹🇳', code:'TUN 8', name:'Dylan Bronn', missing:false },
+  { group:'F', team:'Tunisia', flag:'🇹🇳', code:'TUN 9', name:'Elyes Skhiri', missing:false },
+  { group:'F', team:'Tunisia', flag:'🇹🇳', code:'TUN 10', name:'Aïssa Laïdouni', missing:true },
+  { group:'F', team:'Tunisia', flag:'🇹🇳', code:'TUN 11', name:'Ferjani Sassi', missing:false },
+  { group:'F', team:'Tunisia', flag:'🇹🇳', code:'TUN 12', name:'Mohamed Ali Ben Romdhane', missing:false },
+  { group:'F', team:'Tunisia', flag:'🇹🇳', code:'TUN 13', name:'Team Photo', missing:false },
+  { group:'F', team:'Tunisia', flag:'🇹🇳', code:'TUN 14', name:'Hannibal Mejbri', missing:true },
+  { group:'F', team:'Tunisia', flag:'🇹🇳', code:'TUN 15', name:'Elias Achouri', missing:true },
+  { group:'F', team:'Tunisia', flag:'🇹🇳', code:'TUN 16', name:'Elias Saad', missing:false },
+  { group:'F', team:'Tunisia', flag:'🇹🇳', code:'TUN 17', name:'Hazem Mastouri', missing:true },
+  { group:'F', team:'Tunisia', flag:'🇹🇳', code:'TUN 18', name:'İsmaıl Gharbi', missing:false },
+  { group:'F', team:'Tunisia', flag:'🇹🇳', code:'TUN 19', name:'Sayfallah Ltaief', missing:false },
+  { group:'F', team:'Tunisia', flag:'🇹🇳', code:'TUN 20', name:'Naïm Sliti', missing:false },
+
+  // ── GROUP G ──────────────────────────────────────────────
+  { group:'G', team:'Belgium', flag:'🇧🇪', code:'BEL 1', name:'Badge/Foil', missing:false },
+  { group:'G', team:'Belgium', flag:'🇧🇪', code:'BEL 2', name:'Thibaut Courtois', missing:false },
+  { group:'G', team:'Belgium', flag:'🇧🇪', code:'BEL 3', name:'Arthur Theate', missing:false },
+  { group:'G', team:'Belgium', flag:'🇧🇪', code:'BEL 4', name:'Timothy Castagne', missing:false },
+  { group:'G', team:'Belgium', flag:'🇧🇪', code:'BEL 5', name:'Zeno Debast', missing:false },
+  { group:'G', team:'Belgium', flag:'🇧🇪', code:'BEL 6', name:'Brandon Mechele', missing:true },
+  { group:'G', team:'Belgium', flag:'🇧🇪', code:'BEL 7', name:'Maxim De Cuyper', missing:true },
+  { group:'G', team:'Belgium', flag:'🇧🇪', code:'BEL 8', name:'Thomas Meunier', missing:false },
+  { group:'G', team:'Belgium', flag:'🇧🇪', code:'BEL 9', name:'Youri Tielemans', missing:false },
+  { group:'G', team:'Belgium', flag:'🇧🇪', code:'BEL 10', name:'Amadou Onana', missing:false },
+  { group:'G', team:'Belgium', flag:'🇧🇪', code:'BEL 11', name:'Nicolai Rastic', missing:false },
+  { group:'G', team:'Belgium', flag:'🇧🇪', code:'BEL 12', name:'Alexis Saelemaekers', missing:false },
+  { group:'G', team:'Belgium', flag:'🇧🇪', code:'BEL 13', name:'Team Photo', missing:false },
+  { group:'G', team:'Belgium', flag:'🇧🇪', code:'BEL 14', name:'Hans Vanaken', missing:false },
+  { group:'G', team:'Belgium', flag:'🇧🇪', code:'BEL 15', name:'Kevin De Bruyne', missing:false },
+  { group:'G', team:'Belgium', flag:'🇧🇪', code:'BEL 16', name:'Jérémy Doku', missing:false },
+  { group:'G', team:'Belgium', flag:'🇧🇪', code:'BEL 17', name:'Charles De Ketelaere', missing:false },
+  { group:'G', team:'Belgium', flag:'🇧🇪', code:'BEL 18', name:'Leandro Trossard', missing:false },
+  { group:'G', team:'Belgium', flag:'🇧🇪', code:'BEL 19', name:'Lois Openda', missing:false },
+  { group:'G', team:'Belgium', flag:'🇧🇪', code:'BEL 20', name:'Romelu Lukaku', missing:false },
+
+  { group:'G', team:'Egypt', flag:'🇪🇬', code:'EGV 1', name:'Badge/Foil', missing:false },
+  { group:'G', team:'Egypt', flag:'🇪🇬', code:'EGV 2', name:'Mohamed Elshenawy', missing:true },
+  { group:'G', team:'Egypt', flag:'🇪🇬', code:'EGV 3', name:'Mohamed Hany', missing:false },
+  { group:'G', team:'Egypt', flag:'🇪🇬', code:'EGV 4', name:'Mohamed Hamdy', missing:false },
+  { group:'G', team:'Egypt', flag:'🇪🇬', code:'EGV 5', name:'Mohamed Hamdy (2)', missing:false },
+  { group:'G', team:'Egypt', flag:'🇪🇬', code:'EGV 6', name:'Khaled Sobhi', missing:false },
+  { group:'G', team:'Egypt', flag:'🇪🇬', code:'EGV 7', name:'Ramy Rabia', missing:false },
+  { group:'G', team:'Egypt', flag:'🇪🇬', code:'EGV 8', name:'Hossam Abdelmaguid', missing:false },
+  { group:'G', team:'Egypt', flag:'🇪🇬', code:'EGV 9', name:'Ahmed Fatouh', missing:false },
+  { group:'G', team:'Egypt', flag:'🇪🇬', code:'EGV 10', name:'Marwan Attia', missing:false },
+  { group:'G', team:'Egypt', flag:'🇪🇬', code:'EGV 11', name:'Zizo', missing:true },
+  { group:'G', team:'Egypt', flag:'🇪🇬', code:'EGV 12', name:'Hana Fathy', missing:false },
+  { group:'G', team:'Egypt', flag:'🇪🇬', code:'EGV 13', name:'Team Photo', missing:true },
+  { group:'G', team:'Egypt', flag:'🇪🇬', code:'EGV 14', name:'Mohamed Lasheen', missing:false },
+  { group:'G', team:'Egypt', flag:'🇪🇬', code:'EGV 15', name:'Emam Ashour', missing:false },
+  { group:'G', team:'Egypt', flag:'🇪🇬', code:'EGV 16', name:'Osama Faisal', missing:false },
+  { group:'G', team:'Egypt', flag:'🇪🇬', code:'EGV 17', name:'Mohamed Salah', missing:false },
+  { group:'G', team:'Egypt', flag:'🇪🇬', code:'EGV 18', name:'Mostafa Mohamed', missing:false },
+  { group:'G', team:'Egypt', flag:'🇪🇬', code:'EGV 19', name:'Trezeguet', missing:false },
+  { group:'G', team:'Egypt', flag:'🇪🇬', code:'EGV 20', name:'Omar Marmoush', missing:false },
+
+  { group:'G', team:'IR Iran', flag:'🇮🇷', code:'IRN 1', name:'Badge/Foil', missing:false },
+  { group:'G', team:'IR Iran', flag:'🇮🇷', code:'IRN 2', name:'Alireza Beiranvand', missing:false },
+  { group:'G', team:'IR Iran', flag:'🇮🇷', code:'IRN 3', name:'Morteza Pouraliganji', missing:false },
+  { group:'G', team:'IR Iran', flag:'🇮🇷', code:'IRN 4', name:'Ehsan Hajsafi', missing:false },
+  { group:'G', team:'IR Iran', flag:'🇮🇷', code:'IRN 5', name:'Milad Mohammadi', missing:true },
+  { group:'G', team:'IR Iran', flag:'🇮🇷', code:'IRN 6', name:'Shojae Khalilzadeh', missing:false },
+  { group:'G', team:'IR Iran', flag:'🇮🇷', code:'IRN 7', name:'Ramin Rezaeian', missing:false },
+  { group:'G', team:'IR Iran', flag:'🇮🇷', code:'IRN 8', name:'Hossein Kanaaani', missing:false },
+  { group:'G', team:'IR Iran', flag:'🇮🇷', code:'IRN 9', name:'Sadegh Moharrami', missing:true },
+  { group:'G', team:'IR Iran', flag:'🇮🇷', code:'IRN 10', name:'Saleh Hardani', missing:false },
+  { group:'G', team:'IR Iran', flag:'🇮🇷', code:'IRN 11', name:'Sayed Ezatolahi', missing:false },
+  { group:'G', team:'IR Iran', flag:'🇮🇷', code:'IRN 12', name:'Saman Ghoddos', missing:false },
+  { group:'G', team:'IR Iran', flag:'🇮🇷', code:'IRN 13', name:'Team Photo', missing:true },
+  { group:'G', team:'IR Iran', flag:'🇮🇷', code:'IRN 14', name:'Omid Noorafkan', missing:false },
+  { group:'G', team:'IR Iran', flag:'🇮🇷', code:'IRN 15', name:'Rozbeh Cheshmi', missing:false },
+  { group:'G', team:'IR Iran', flag:'🇮🇷', code:'IRN 16', name:'Mohammad Mohebi', missing:false },
+  { group:'G', team:'IR Iran', flag:'🇮🇷', code:'IRN 17', name:'Sardar Azmoun', missing:false },
+  { group:'G', team:'IR Iran', flag:'🇮🇷', code:'IRN 18', name:'Mehdi Taremi', missing:false },
+  { group:'G', team:'IR Iran', flag:'🇮🇷', code:'IRN 19', name:'Alireza Jahanbakhsh', missing:false },
+  { group:'G', team:'IR Iran', flag:'🇮🇷', code:'IRN 20', name:'Ali Gholizadeh', missing:false },
+
+  { group:'G', team:'New Zealand', flag:'🇳🇿', code:'NZL 1', name:'Badge/Foil', missing:false },
+  { group:'G', team:'New Zealand', flag:'🇳🇿', code:'NZL 2', name:'Max Crocombe', missing:false },
+  { group:'G', team:'New Zealand', flag:'🇳🇿', code:'NZL 3', name:'Alex Paulsen', missing:false },
+  { group:'G', team:'New Zealand', flag:'🇳🇿', code:'NZL 4', name:'Michael Boxall', missing:false },
+  { group:'G', team:'New Zealand', flag:'🇳🇿', code:'NZL 5', name:'Liberato Cacace', missing:true },
+  { group:'G', team:'New Zealand', flag:'🇳🇿', code:'NZL 6', name:'Tim Payne', missing:false },
+  { group:'G', team:'New Zealand', flag:'🇳🇿', code:'NZL 7', name:'Tyler Bindon', missing:false },
+  { group:'G', team:'New Zealand', flag:'🇳🇿', code:'NZL 8', name:'Francis De Vries', missing:false },
+  { group:'G', team:'New Zealand', flag:'🇳🇿', code:'NZL 9', name:'Finn Surman', missing:true },
+  { group:'G', team:'New Zealand', flag:'🇳🇿', code:'NZL 10', name:'Joe Bell', missing:false },
+  { group:'G', team:'New Zealand', flag:'🇳🇿', code:'NZL 11', name:'Davpreet Singh', missing:false },
+  { group:'G', team:'New Zealand', flag:'🇳🇿', code:'NZL 12', name:'Ben Thomas', missing:false },
+  { group:'G', team:'New Zealand', flag:'🇳🇿', code:'NZL 13', name:'Team Photo', missing:false },
+  { group:'G', team:'New Zealand', flag:'🇳🇿', code:'NZL 14', name:'Matthew Garbett', missing:false },
+  { group:'G', team:'New Zealand', flag:'🇳🇿', code:'NZL 15', name:'Mario Stanovnik', missing:false },
+  { group:'G', team:'New Zealand', flag:'🇳🇿', code:'NZL 16', name:'Ben Old', missing:false },
+  { group:'G', team:'New Zealand', flag:'🇳🇿', code:'NZL 17', name:'Chris Wood', missing:false },
+  { group:'G', team:'New Zealand', flag:'🇳🇿', code:'NZL 18', name:'Elijah Just', missing:false },
+  { group:'G', team:'New Zealand', flag:'🇳🇿', code:'NZL 19', name:'Callum McCowatt', missing:false },
+  { group:'G', team:'New Zealand', flag:'🇳🇿', code:'NZL 20', name:'Kosta Barbarouses', missing:false },
+
+  // ── GROUP H ──────────────────────────────────────────────
+  { group:'H', team:'Spain', flag:'🇪🇸', code:'ESP 1', name:'Badge/Foil', missing:false },
+  { group:'H', team:'Spain', flag:'🇪🇸', code:'ESP 2', name:'Unai Simón', missing:false },
+  { group:'H', team:'Spain', flag:'🇪🇸', code:'ESP 3', name:'Robin Le Normand', missing:false },
+  { group:'H', team:'Spain', flag:'🇪🇸', code:'ESP 4', name:'Aymeric Laporte', missing:true },
+  { group:'H', team:'Spain', flag:'🇪🇸', code:'ESP 5', name:'Iñaki Williams', missing:false },
+  { group:'H', team:'Spain', flag:'🇪🇸', code:'ESP 6', name:'Pedro Porro', missing:true },
+  { group:'H', team:'Spain', flag:'🇪🇸', code:'ESP 7', name:'Dani Carvajal', missing:false },
+  { group:'H', team:'Spain', flag:'🇪🇸', code:'ESP 8', name:'Marc Cucurella', missing:false },
+  { group:'H', team:'Spain', flag:'🇪🇸', code:'ESP 9', name:'Martín Zubimendi', missing:false },
+  { group:'H', team:'Spain', flag:'🇪🇸', code:'ESP 10', name:'Rodri', missing:false },
+  { group:'H', team:'Spain', flag:'🇪🇸', code:'ESP 11', name:'Pedri', missing:false },
+  { group:'H', team:'Spain', flag:'🇪🇸', code:'ESP 12', name:'Fabián Ruiz', missing:false },
+  { group:'H', team:'Spain', flag:'🇪🇸', code:'ESP 13', name:'Team Photo', missing:false },
+  { group:'H', team:'Spain', flag:'🇪🇸', code:'ESP 14', name:'Mikel Merino', missing:false },
+  { group:'H', team:'Spain', flag:'🇪🇸', code:'ESP 15', name:'Lamine Yamal', missing:false },
+  { group:'H', team:'Spain', flag:'🇪🇸', code:'ESP 16', name:'Dani Olmo', missing:false },
+  { group:'H', team:'Spain', flag:'🇪🇸', code:'ESP 17', name:'Nico Williams', missing:false },
+  { group:'H', team:'Spain', flag:'🇪🇸', code:'ESP 18', name:'Ferrán Torres', missing:false },
+  { group:'H', team:'Spain', flag:'🇪🇸', code:'ESP 19', name:'Álvaro Morata', missing:false },
+  { group:'H', team:'Spain', flag:'🇪🇸', code:'ESP 20', name:'Mikel Oyarzabal', missing:true },
+
+  { group:'H', team:'Cabo Verde', flag:'🇨🇻', code:'CPV 1', name:'Badge/Foil', missing:true },
+  { group:'H', team:'Cabo Verde', flag:'🇨🇻', code:'CPV 2', name:'Vozinha', missing:false },
+  { group:'H', team:'Cabo Verde', flag:'🇨🇻', code:'CPV 3', name:'Lodan Costa', missing:false },
+  { group:'H', team:'Cabo Verde', flag:'🇨🇻', code:'CPV 4', name:'Pico', missing:false },
+  { group:'H', team:'Cabo Verde', flag:'🇨🇻', code:'CPV 5', name:'Dinev', missing:true },
+  { group:'H', team:'Cabo Verde', flag:'🇨🇻', code:'CPV 6', name:'Steven Moreira', missing:false },
+  { group:'H', team:'Cabo Verde', flag:'🇨🇻', code:'CPV 7', name:'Wagner Pina', missing:false },
+  { group:'H', team:'Cabo Verde', flag:'🇨🇻', code:'CPV 8', name:'João Paulo', missing:false },
+  { group:'H', team:'Cabo Verde', flag:'🇨🇻', code:'CPV 9', name:'Vaneck Semedo', missing:false },
+  { group:'H', team:'Cabo Verde', flag:'🇨🇻', code:'CPV 10', name:'Kevin Pina', missing:false },
+  { group:'H', team:'Cabo Verde', flag:'🇨🇻', code:'CPV 11', name:'Patrick Andrade', missing:true },
+  { group:'H', team:'Cabo Verde', flag:'🇨🇻', code:'CPV 12', name:'Jamiro Monteiro', missing:false },
+  { group:'H', team:'Cabo Verde', flag:'🇨🇻', code:'CPV 13', name:'Team Photo', missing:false },
+  { group:'H', team:'Cabo Verde', flag:'🇨🇻', code:'CPV 14', name:'Deroy Duarte', missing:false },
+  { group:'H', team:'Cabo Verde', flag:'🇨🇻', code:'CPV 15', name:'Garry Rodrigues', missing:false },
+  { group:'H', team:'Cabo Verde', flag:'🇨🇻', code:'CPV 16', name:'Jovane Cabral', missing:false },
+  { group:'H', team:'Cabo Verde', flag:'🇨🇻', code:'CPV 17', name:'Ivan Mendes', missing:false },
+  { group:'H', team:'Cabo Verde', flag:'🇨🇻', code:'CPV 18', name:'Daïlon Livramento', missing:false },
+  { group:'H', team:'Cabo Verde', flag:'🇨🇻', code:'CPV 19', name:'Willy Semedo', missing:false },
+  { group:'H', team:'Cabo Verde', flag:'🇨🇻', code:'CPV 20', name:'Bebé', missing:true },
+
+  { group:'H', team:'Saudi Arabia', flag:'🇸🇦', code:'KSA 1', name:'Badge/Foil', missing:true },
+  { group:'H', team:'Saudi Arabia', flag:'🇸🇦', code:'KSA 2', name:'Nawaf Al-Aqidi', missing:false },
+  { group:'H', team:'Saudi Arabia', flag:'🇸🇦', code:'KSA 3', name:'Abdulrahman Alsanbi', missing:false },
+  { group:'H', team:'Saudi Arabia', flag:'🇸🇦', code:'KSA 4', name:'Saud Abdulhamid', missing:false },
+  { group:'H', team:'Saudi Arabia', flag:'🇸🇦', code:'KSA 5', name:'Nawaf Beriaghl', missing:false },
+  { group:'H', team:'Saudi Arabia', flag:'🇸🇦', code:'KSA 6', name:'Jehad Thikri', missing:false },
+  { group:'H', team:'Saudi Arabia', flag:'🇸🇦', code:'KSA 7', name:'Moteb Alharbi', missing:false },
+  { group:'H', team:'Saudi Arabia', flag:'🇸🇦', code:'KSA 8', name:'Hassan Altambakti', missing:false },
+  { group:'H', team:'Saudi Arabia', flag:'🇸🇦', code:'KSA 9', name:'Musab Aljuwayr', missing:true },
+  { group:'H', team:'Saudi Arabia', flag:'🇸🇦', code:'KSA 10', name:'Zhad Al-Johani', missing:false },
+  { group:'H', team:'Saudi Arabia', flag:'🇸🇦', code:'KSA 11', name:'Abdullah Alkhaibari', missing:false },
+  { group:'H', team:'Saudi Arabia', flag:'🇸🇦', code:'KSA 12', name:'Nasser Aldawsari', missing:false },
+  { group:'H', team:'Saudi Arabia', flag:'🇸🇦', code:'KSA 13', name:'Team Photo', missing:false },
+  { group:'H', team:'Saudi Arabia', flag:'🇸🇦', code:'KSA 14', name:'Saleh Abu Alshamat', missing:false },
+  { group:'H', team:'Saudi Arabia', flag:'🇸🇦', code:'KSA 15', name:'Marwan Alsahafi', missing:true },
+  { group:'H', team:'Saudi Arabia', flag:'🇸🇦', code:'KSA 16', name:'Salem Aldawsari', missing:false },
+  { group:'H', team:'Saudi Arabia', flag:'🇸🇦', code:'KSA 17', name:'Abdulrahman Alobud', missing:true },
+  { group:'H', team:'Saudi Arabia', flag:'🇸🇦', code:'KSA 18', name:'Feras Albrikan', missing:false },
+  { group:'H', team:'Saudi Arabia', flag:'🇸🇦', code:'KSA 19', name:'Saleh Alshehri', missing:false },
+  { group:'H', team:'Saudi Arabia', flag:'🇸🇦', code:'KSA 20', name:'Abdullah Alhamdan', missing:false },
+
+  { group:'H', team:'Uruguay', flag:'🇺🇾', code:'URU 1', name:'Badge/Foil', missing:false },
+  { group:'H', team:'Uruguay', flag:'🇺🇾', code:'URU 2', name:'Sergio Rochet', missing:false },
+  { group:'H', team:'Uruguay', flag:'🇺🇾', code:'URU 3', name:'Santiago Mele', missing:false },
+  { group:'H', team:'Uruguay', flag:'🇺🇾', code:'URU 4', name:'Ronald Araújo', missing:false },
+  { group:'H', team:'Uruguay', flag:'🇺🇾', code:'URU 5', name:'José María Giménez', missing:false },
+  { group:'H', team:'Uruguay', flag:'🇺🇾', code:'URU 6', name:'Sebastián Cáceres', missing:true },
+  { group:'H', team:'Uruguay', flag:'🇺🇾', code:'URU 7', name:'Mathías Olivera', missing:false },
+  { group:'H', team:'Uruguay', flag:'🇺🇾', code:'URU 8', name:'Guillermo Varela', missing:false },
+  { group:'H', team:'Uruguay', flag:'🇺🇾', code:'URU 9', name:'Nantán Máandez', missing:false },
+  { group:'H', team:'Uruguay', flag:'🇺🇾', code:'URU 10', name:'Federico Valverde', missing:false },
+  { group:'H', team:'Uruguay', flag:'🇺🇾', code:'URU 11', name:'Giorgian de Arrascaeta', missing:true },
+  { group:'H', team:'Uruguay', flag:'🇺🇾', code:'URU 12', name:'Rodrigo Bentancur', missing:false },
+  { group:'H', team:'Uruguay', flag:'🇺🇾', code:'URU 13', name:'Team Photo', missing:false },
+  { group:'H', team:'Uruguay', flag:'🇺🇾', code:'URU 14', name:'Manuel Ugarte', missing:false },
+  { group:'H', team:'Uruguay', flag:'🇺🇾', code:'URU 15', name:'Nicolás de la Cruz', missing:false },
+  { group:'H', team:'Uruguay', flag:'🇺🇾', code:'URU 16', name:'Maxi Araújo', missing:false },
+  { group:'H', team:'Uruguay', flag:'🇺🇾', code:'URU 17', name:'Darwin Núñez', missing:false },
+  { group:'H', team:'Uruguay', flag:'🇺🇾', code:'URU 18', name:'Federico Viñas', missing:false },
+  { group:'H', team:'Uruguay', flag:'🇺🇾', code:'URU 19', name:'Rodrigo Aguirre', missing:false },
+  { group:'H', team:'Uruguay', flag:'🇺🇾', code:'URU 20', name:'Facundo Pellistri', missing:false },
+
+  // ── GROUP I ──────────────────────────────────────────────
+  { group:'I', team:'France', flag:'🇫🇷', code:'FRA 1', name:'Badge/Foil', missing:false },
+  { group:'I', team:'France', flag:'🇫🇷', code:'FRA 2', name:'Dayot Upamecano', missing:false },
+  { group:'I', team:'France', flag:'🇫🇷', code:'FRA 3', name:'Theo Hernandez', missing:false },
+  { group:'I', team:'France', flag:'🇫🇷', code:'FRA 4', name:'William Saliba', missing:false },
+  { group:'I', team:'France', flag:'🇫🇷', code:'FRA 5', name:'Jules Koundé', missing:true },
+  { group:'I', team:'France', flag:'🇫🇷', code:'FRA 6', name:'Lucas Digne', missing:false },
+  { group:'I', team:'France', flag:'🇫🇷', code:'FRA 7', name:'Elisson Tchouaméni', missing:false },
+  { group:'I', team:'France', flag:'🇫🇷', code:'FRA 8', name:'Eduardo Camavinga', missing:false },
+  { group:'I', team:'France', flag:'🇫🇷', code:'FRA 9', name:'Marcus Thuram', missing:false },
+  { group:'I', team:'France', flag:'🇫🇷', code:'FRA 10', name:'Idrissa Gueye', missing:false },
+  { group:'I', team:'France', flag:'🇫🇷', code:'FRA 11', name:'Ibrahima Konaté', missing:false },
+  { group:'I', team:'France', flag:'🇫🇷', code:'FRA 12', name:'Yann Maignan', missing:false },
+  { group:'I', team:'France', flag:'🇫🇷', code:'FRA 13', name:'Team Photo', missing:false },
+  { group:'I', team:'France', flag:'🇫🇷', code:'FRA 14', name:'Oshinha Gnohéré', missing:false },
+  { group:'I', team:'France', flag:'🇫🇷', code:'FRA 15', name:'Adrien Rabiot', missing:false },
+  { group:'I', team:'France', flag:'🇫🇷', code:'FRA 16', name:'Michaël Cuisance', missing:false },
+  { group:'I', team:'France', flag:'🇫🇷', code:'FRA 17', name:'Kylian Mbappé', missing:false },
+  { group:'I', team:'France', flag:'🇫🇷', code:'FRA 18', name:'Kingsley Coman', missing:true },
+  { group:'I', team:'France', flag:'🇫🇷', code:'FRA 19', name:'Yulun Mbargue', missing:false },
+  { group:'I', team:'France', flag:'🇫🇷', code:'FRA 20', name:'Sabali Guirassy', missing:false },
+
+  { group:'I', team:'Senegal', flag:'🇸🇳', code:'SEN 1', name:'Badge/Foil', missing:false },
+  { group:'I', team:'Senegal', flag:'🇸🇳', code:'SEN 2', name:'Ibrahima Diatta', missing:true },
+  { group:'I', team:'Senegal', flag:'🇸🇳', code:'SEN 3', name:'Ibrahim Diop', missing:true },
+  { group:'I', team:'Senegal', flag:'🇸🇳', code:'SEN 4', name:'Edouard Mendy', missing:false },
+  { group:'I', team:'Senegal', flag:'🇸🇳', code:'SEN 5', name:'Abdoulaye Seck', missing:true },
+  { group:'I', team:'Senegal', flag:'🇸🇳', code:'SEN 6', name:'Ismael Jakobs', missing:false },
+  { group:'I', team:'Senegal', flag:'🇸🇳', code:'SEN 7', name:'Pape Matar Sarr', missing:false },
+  { group:'I', team:'Senegal', flag:'🇸🇳', code:'SEN 8', name:'Idrissa Gana Gueye', missing:false },
+  { group:'I', team:'Senegal', flag:'🇸🇳', code:'SEN 9', name:'Sovu Mané', missing:false },
+  { group:'I', team:'Senegal', flag:'🇸🇳', code:'SEN 10', name:'Nicolas Jackson', missing:false },
+  { group:'I', team:'Senegal', flag:'🇸🇳', code:'SEN 11', name:'B Man Ndiaye', missing:false },
+  { group:'I', team:'Senegal', flag:'🇸🇳', code:'SEN 12', name:'Souleymé Dié', missing:false },
+  { group:'I', team:'Senegal', flag:'🇸🇳', code:'SEN 13', name:'Team Photo', missing:false },
+  { group:'I', team:'Senegal', flag:'🇸🇳', code:'SEN 14', name:'Pape Guaye', missing:false },
+  { group:'I', team:'Senegal', flag:'🇸🇳', code:'SEN 15', name:'Habré Camaré', missing:false },
+  { group:'I', team:'Senegal', flag:'🇸🇳', code:'SEN 16', name:'Kalidou Koulibaly', missing:false },
+  { group:'I', team:'Senegal', flag:'🇸🇳', code:'SEN 17', name:'Krépin Diatta', missing:false },
+  { group:'I', team:'Senegal', flag:'🇸🇳', code:'SEN 18', name:'Iliman Ndiaye', missing:false },
+  { group:'I', team:'Senegal', flag:'🇸🇳', code:'SEN 19', name:'Moussa Ndiaye', missing:false },
+  { group:'I', team:'Senegal', flag:'🇸🇳', code:'SEN 20', name:'Enissa Gana Gueye', missing:false },
+
+  { group:'I', team:'Iraq', flag:'🇮🇶', code:'IRQ 1', name:'Badge/Foil', missing:false },
+  { group:'I', team:'Iraq', flag:'🇮🇶', code:'IRQ 2', name:'Jalal Hassan', missing:false },
+  { group:'I', team:'Iraq', flag:'🇮🇶', code:'IRQ 3', name:'Ali Fakhri', missing:false },
+  { group:'I', team:'Iraq', flag:'🇮🇶', code:'IRQ 4', name:'Mustafa Nazih', missing:false },
+  { group:'I', team:'Iraq', flag:'🇮🇶', code:'IRQ 5', name:'Brahim Bayesh', missing:false },
+  { group:'I', team:'Iraq', flag:'🇮🇶', code:'IRQ 6', name:'Merchas Doski', missing:true },
+  { group:'I', team:'Iraq', flag:'🇮🇶', code:'IRQ 7', name:'Zaid Tahseen', missing:true },
+  { group:'I', team:'Iraq', flag:'🇮🇶', code:'IRQ 8', name:'Husain Shber', missing:false },
+  { group:'I', team:'Iraq', flag:'🇮🇶', code:'IRQ 9', name:'Amjed Al-Ammari', missing:false },
+  { group:'I', team:'Iraq', flag:'🇮🇶', code:'IRQ 10', name:'Avan Hashem', missing:false },
+  { group:'I', team:'Iraq', flag:'🇮🇶', code:'IRQ 11', name:'Ali Al-Hamadi', missing:false },
+  { group:'I', team:'Iraq', flag:'🇮🇶', code:'IRQ 12', name:'Omar Fattah', missing:false },
+  { group:'I', team:'Iraq', flag:'🇮🇶', code:'IRQ 13', name:'Team Photo', missing:false },
+  { group:'I', team:'Iraq', flag:'🇮🇶', code:'IRQ 14', name:'Kaousse Amini', missing:false },
+  { group:'I', team:'Iraq', flag:'🇮🇶', code:'IRQ 15', name:'Huster Riza', missing:false },
+  { group:'I', team:'Iraq', flag:'🇮🇶', code:'IRQ 16', name:'Rebin Sulaka', missing:false },
+  { group:'I', team:'Iraq', flag:'🇮🇶', code:'IRQ 17', name:'Mohammed Yunus', missing:false },
+  { group:'I', team:'Iraq', flag:'🇮🇶', code:'IRQ 18', name:'Omar Isa', missing:false },
+  { group:'I', team:'Iraq', flag:'🇮🇶', code:'IRQ 19', name:'Amad Sher', missing:false },
+  { group:'I', team:'Iraq', flag:'🇮🇶', code:'IRQ 20', name:'Mohammad Ali', missing:false },
+
+  { group:'I', team:'Norway', flag:'🇳🇴', code:'NOR 1', name:'Badge/Foil', missing:true },
+  { group:'I', team:'Norway', flag:'🇳🇴', code:'NOR 2', name:'Rune Jarstein', missing:false },
+  { group:'I', team:'Norway', flag:'🇳🇴', code:'NOR 3', name:'Andreas Hanche-Olsen', missing:false },
+  { group:'I', team:'Norway', flag:'🇳🇴', code:'NOR 4', name:'Oscar Bobb', missing:false },
+  { group:'I', team:'Norway', flag:'🇳🇴', code:'NOR 5', name:'Kristoffe Vassbakk Ajer', missing:false },
+  { group:'I', team:'Norway', flag:'🇳🇴', code:'NOR 6', name:'Marcus Holingrem Pedersen', missing:true },
+  { group:'I', team:'Norway', flag:'🇳🇴', code:'NOR 7', name:'David Møller Wolfe', missing:true },
+  { group:'I', team:'Norway', flag:'🇳🇴', code:'NOR 8', name:'Torbjørn Heggem', missing:true },
+  { group:'I', team:'Norway', flag:'🇳🇴', code:'NOR 9', name:'Erling Haaland', missing:false },
+  { group:'I', team:'Norway', flag:'🇳🇴', code:'NOR 10', name:'Martin Ødegaard', missing:true },
+  { group:'I', team:'Norway', flag:'🇳🇴', code:'NOR 11', name:'Jørgen Strand Larsen', missing:false },
+  { group:'I', team:'Norway', flag:'🇳🇴', code:'NOR 12', name:'Antonino Raisa', missing:false },
+  { group:'I', team:'Norway', flag:'🇳🇴', code:'NOR 13', name:'Team Photo', missing:false },
+  { group:'I', team:'Norway', flag:'🇳🇴', code:'NOR 14', name:'Sander Berge', missing:false },
+  { group:'I', team:'Norway', flag:'🇳🇴', code:'NOR 15', name:'Patrick Berg', missing:false },
+  { group:'I', team:'Norway', flag:'🇳🇴', code:'NOR 16', name:'Leo Skiri Østigård', missing:false },
+  { group:'I', team:'Norway', flag:'🇳🇴', code:'NOR 17', name:'Julian Ryerson', missing:false },
+  { group:'I', team:'Norway', flag:'🇳🇴', code:'NOR 18', name:'Anders Trondsen', missing:false },
+  { group:'I', team:'Norway', flag:'🇳🇴', code:'NOR 19', name:'Kjetil Haug', missing:false },
+  { group:'I', team:'Norway', flag:'🇳🇴', code:'NOR 20', name:'Alexander Sørloth', missing:false },
+
+  // ── GROUP J ──────────────────────────────────────────────
+  { group:'J', team:'Argentina', flag:'🇦🇷', code:'ARG 1', name:'Badge/Foil', missing:false },
+  { group:'J', team:'Argentina', flag:'🇦🇷', code:'ARG 2', name:'Emiliano Martínez', missing:false },
+  { group:'J', team:'Argentina', flag:'🇦🇷', code:'ARG 3', name:'Nicolás Tagliafico', missing:false },
+  { group:'J', team:'Argentina', flag:'🇦🇷', code:'ARG 4', name:'Cristian Romero', missing:true },
+  { group:'J', team:'Argentina', flag:'🇦🇷', code:'ARG 5', name:'Rodrigo De Paul', missing:false },
+  { group:'J', team:'Argentina', flag:'🇦🇷', code:'ARG 6', name:'Nicolás Otamendi', missing:false },
+  { group:'J', team:'Argentina', flag:'🇦🇷', code:'ARG 7', name:'Alexis Mac Allister', missing:false },
+  { group:'J', team:'Argentina', flag:'🇦🇷', code:'ARG 8', name:'Enzo Fernández', missing:true },
+  { group:'J', team:'Argentina', flag:'🇦🇷', code:'ARG 9', name:'Daniel Moline', missing:false },
+  { group:'J', team:'Argentina', flag:'🇦🇷', code:'ARG 10', name:'Lautaro Martínez', missing:false },
+  { group:'J', team:'Argentina', flag:'🇦🇷', code:'ARG 11', name:'Ezequiel Palacios', missing:true },
+  { group:'J', team:'Argentina', flag:'🇦🇷', code:'ARG 12', name:'Lionel Messi', missing:false },
+  { group:'J', team:'Argentina', flag:'🇦🇷', code:'ARG 13', name:'Team Photo (Qualifiers)', missing:false },
+  { group:'J', team:'Argentina', flag:'🇦🇷', code:'ARG 14', name:'Thiago Almada', missing:false },
+  { group:'J', team:'Argentina', flag:'🇦🇷', code:'ARG 15', name:'Franco Mastantuono', missing:true },
+  { group:'J', team:'Argentina', flag:'🇦🇷', code:'ARG 16', name:'Nico González', missing:true },
+  { group:'J', team:'Argentina', flag:'🇦🇷', code:'ARG 17', name:'Giovani Lo Celso', missing:false },
+  { group:'J', team:'Argentina', flag:'🇦🇷', code:'ARG 18', name:'Nico Paz', missing:false },
+  { group:'J', team:'Argentina', flag:'🇦🇷', code:'ARG 19', name:'Julián Álvarez', missing:false },
+  { group:'J', team:'Argentina', flag:'🇦🇷', code:'ARG 20', name:'Lautaro Martínez', missing:false },
+
+  { group:'J', team:'Algeria', flag:'🇩🇿', code:'ALG 1', name:'Badge/Foil', missing:false },
+  { group:'J', team:'Algeria', flag:'🇩🇿', code:'ALG 2', name:'Rais Mbolhi', missing:false },
+  { group:'J', team:'Algeria', flag:'🇩🇿', code:'ALG 3', name:'Alexis Guendouz', missing:false },
+  { group:'J', team:'Algeria', flag:'🇩🇿', code:'ALG 4', name:'Anas Tahiri Togoli', missing:false },
+  { group:'J', team:'Algeria', flag:'🇩🇿', code:'ALG 5', name:'Ramiz Zerhouni', missing:false },
+  { group:'J', team:'Algeria', flag:'🇩🇿', code:'ALG 6', name:'Aidibe Benayada', missing:false },
+  { group:'J', team:'Algeria', flag:'🇩🇿', code:'ALG 7', name:'Harès Kabba', missing:false },
+  { group:'J', team:'Algeria', flag:'🇩🇿', code:'ALG 8', name:'Ismail Bennacer', missing:true },
+  { group:'J', team:'Algeria', flag:'🇩🇿', code:'ALG 9', name:'Farid Boulaya', missing:false },
+  { group:'J', team:'Algeria', flag:'🇩🇿', code:'ALG 10', name:'Hicham Boudaoui', missing:true },
+  { group:'J', team:'Algeria', flag:'🇩🇿', code:'ALG 11', name:'Nabil Bentaleb', missing:false },
+  { group:'J', team:'Algeria', flag:'🇩🇿', code:'ALG 12', name:'Josselin Kaalon', missing:false },
+  { group:'J', team:'Algeria', flag:'🇩🇿', code:'ALG 13', name:'Team Photo', missing:false },
+  { group:'J', team:'Algeria', flag:'🇩🇿', code:'ALG 14', name:'Belaïli', missing:false },
+  { group:'J', team:'Algeria', flag:'🇩🇿', code:'ALG 15', name:'Riyad Mahrez', missing:true },
+  { group:'J', team:'Algeria', flag:'🇩🇿', code:'ALG 16', name:'Abderaouf Benali', missing:false },
+  { group:'J', team:'Algeria', flag:'🇩🇿', code:'ALG 17', name:'Amir Sayoud', missing:false },
+  { group:'J', team:'Algeria', flag:'🇩🇿', code:'ALG 18', name:'Anes Tazaïbt', missing:false },
+  { group:'J', team:'Algeria', flag:'🇩🇿', code:'ALG 19', name:'Baghdad Bounedjah', missing:true },
+  { group:'J', team:'Algeria', flag:'🇩🇿', code:'ALG 20', name:'Mohammed Amoura', missing:true },
+
+  { group:'J', team:'Austria', flag:'🇦🇹', code:'AUT 1', name:'Badge/Foil', missing:false },
+  { group:'J', team:'Austria', flag:'🇦🇹', code:'AUT 2', name:'Patrick Pentz', missing:false },
+  { group:'J', team:'Austria', flag:'🇦🇹', code:'AUT 3', name:'José Sá', missing:true },
+  { group:'J', team:'Austria', flag:'🇦🇹', code:'AUT 4', name:'Christoph Lainer', missing:false },
+  { group:'J', team:'Austria', flag:'🇦🇹', code:'AUT 5', name:'Alexander Schlager', missing:false },
+  { group:'J', team:'Austria', flag:'🇦🇹', code:'AUT 6', name:'Kevin Danso', missing:false },
+  { group:'J', team:'Austria', flag:'🇦🇹', code:'AUT 7', name:'Stefan Posch', missing:true },
+  { group:'J', team:'Austria', flag:'🇦🇹', code:'AUT 8', name:'Philipp Lienhart', missing:false },
+  { group:'J', team:'Austria', flag:'🇦🇹', code:'AUT 9', name:'Roland Schmid', missing:false },
+  { group:'J', team:'Austria', flag:'🇦🇹', code:'AUT 10', name:'Xaver Schlager', missing:true },
+  { group:'J', team:'Austria', flag:'🇦🇹', code:'AUT 11', name:'Nicolas Seiwald', missing:false },
+  { group:'J', team:'Austria', flag:'🇦🇹', code:'AUT 12', name:'Michael Gregoritsch', missing:false },
+  { group:'J', team:'Austria', flag:'🇦🇹', code:'AUT 13', name:'Team Photo', missing:false },
+  { group:'J', team:'Austria', flag:'🇦🇹', code:'AUT 14', name:'Christian Baumgartner', missing:false },
+  { group:'J', team:'Austria', flag:'🇦🇹', code:'AUT 15', name:'Florian Grillitsch', missing:false },
+  { group:'J', team:'Austria', flag:'🇦🇹', code:'AUT 16', name:'Marcel Sabitzer', missing:false },
+  { group:'J', team:'Austria', flag:'🇦🇹', code:'AUT 17', name:'Marko Arnautović', missing:false },
+  { group:'J', team:'Austria', flag:'🇦🇹', code:'AUT 18', name:'Philipp Mwene', missing:false },
+  { group:'J', team:'Austria', flag:'🇦🇹', code:'AUT 19', name:'David Alaba', missing:false },
+  { group:'J', team:'Austria', flag:'🇦🇹', code:'AUT 20', name:'Alexander Prass', missing:false },
+
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR 1', name:'Badge/Foil', missing:false },
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR 2', name:'Vazed Abulaila', missing:true },
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR 3', name:'Ihsan Haddad', missing:true },
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR 4', name:'Mohammed Abu Rabia', missing:false },
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR 5', name:'Vazan Al-Arab', missing:true },
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR 6', name:'Mohammed Abu Hashem', missing:false },
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR 7', name:'Mohammed Abrilmali', missing:false },
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR 8', name:'Yazar Al-Mawri', missing:false },
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR 9', name:'Nour El-Rawabdeh', missing:false },
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR 10', name:'Abdallah Nasib', missing:false },
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR 11', name:'Ibrahim Gaaesh', missing:false },
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR 12', name:'Wadi Al-Rawabdeh', missing:false },
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR 13', name:'Team Photo', missing:false },
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR 14', name:'Mohammed Al-Amari', missing:false },
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR 15', name:'Yaqob Al-Rawabdeh', missing:false },
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR 16', name:'Amjad Jamoos', missing:false },
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR 17', name:'Mahmoud Al-Mardi', missing:true },
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR 18', name:'Ali Olwan', missing:true },
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR 19', name:'Ibrahim Sabra', missing:true },
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR 20', name:'Osaid Khalid', missing:false },
+
+  // ── GROUP K ──────────────────────────────────────────────
+  { group:'K', team:'Portugal', flag:'🇵🇹', code:'POR 1', name:'Badge/Foil', missing:false },
+  { group:'K', team:'Portugal', flag:'🇵🇹', code:'POR 2', name:'Diogo Costa', missing:true },
+  { group:'K', team:'Portugal', flag:'🇵🇹', code:'POR 3', name:'José Sá', missing:true },
+  { group:'K', team:'Portugal', flag:'🇵🇹', code:'POR 4', name:'Rúben Dias', missing:true },
+  { group:'K', team:'Portugal', flag:'🇵🇹', code:'POR 5', name:'João Cancelo', missing:true },
+  { group:'K', team:'Portugal', flag:'🇵🇹', code:'POR 6', name:'Diogo Dalot', missing:true },
+  { group:'K', team:'Portugal', flag:'🇵🇹', code:'POR 7', name:'João Félix', missing:false },
+  { group:'K', team:'Portugal', flag:'🇵🇹', code:'POR 8', name:'Vithinha', missing:false },
+  { group:'K', team:'Portugal', flag:'🇵🇹', code:'POR 9', name:'Nuno Mendes', missing:false },
+  { group:'K', team:'Portugal', flag:'🇵🇹', code:'POR 10', name:'Bernardo Silva', missing:false },
+  { group:'K', team:'Portugal', flag:'🇵🇹', code:'POR 11', name:'Gonçalo Ramos', missing:false },
+  { group:'K', team:'Portugal', flag:'🇵🇹', code:'POR 12', name:'Pedro Neto', missing:false },
+  { group:'K', team:'Portugal', flag:'🇵🇹', code:'POR 13', name:'Team Photo', missing:true },
+  { group:'K', team:'Portugal', flag:'🇵🇹', code:'POR 14', name:'Rúben Neves', missing:false },
+  { group:'K', team:'Portugal', flag:'🇵🇹', code:'POR 15', name:'Cristiano Ronaldo', missing:true },
+  { group:'K', team:'Portugal', flag:'🇵🇹', code:'POR 16', name:'Francisco Trincão', missing:false },
+  { group:'K', team:'Portugal', flag:'🇵🇹', code:'POR 17', name:'João Neves', missing:false },
+  { group:'K', team:'Portugal', flag:'🇵🇹', code:'POR 18', name:'Bruma', missing:false },
+  { group:'K', team:'Portugal', flag:'🇵🇹', code:'POR 19', name:'Gonçalo Inácio', missing:false },
+  { group:'K', team:'Portugal', flag:'🇵🇹', code:'POR 20', name:'Rafael Leão', missing:true },
+
+  { group:'K', team:'Congo DR', flag:'🇨🇩', code:'COD 1', name:'Badge/Foil', missing:false },
+  { group:'K', team:'Congo DR', flag:'🇨🇩', code:'COD 2', name:'Lionel Mpasi', missing:true },
+  { group:'K', team:'Congo DR', flag:'🇨🇩', code:'COD 3', name:'Kemi Badiku', missing:false },
+  { group:'K', team:'Congo DR', flag:'🇨🇩', code:'COD 4', name:'Noku Badiku', missing:false },
+  { group:'K', team:'Congo DR', flag:'🇨🇩', code:'COD 5', name:'Arthur Masuaku', missing:true },
+  { group:'K', team:'Congo DR', flag:'🇨🇩', code:'COD 6', name:'Yssouf Casseroles', missing:false },
+  { group:'K', team:'Congo DR', flag:'🇨🇩', code:'COD 7', name:'Kassouya Ella', missing:false },
+  { group:'K', team:'Congo DR', flag:'🇨🇩', code:'COD 8', name:'Fiston Mayele', missing:false },
+  { group:'K', team:'Congo DR', flag:'🇨🇩', code:'COD 9', name:'Daniel Mbuyamba', missing:false },
+  { group:'K', team:'Congo DR', flag:'🇨🇩', code:'COD 10', name:'Samuel Moutoussamy', missing:false },
+  { group:'K', team:'Congo DR', flag:'🇨🇩', code:'COD 11', name:'Cédric Bakambu', missing:false },
+  { group:'K', team:'Congo DR', flag:'🇨🇩', code:'COD 12', name:'Wethon Mpoku', missing:false },
+  { group:'K', team:'Congo DR', flag:'🇨🇩', code:'COD 13', name:'Team Photo', missing:true },
+  { group:'K', team:'Congo DR', flag:'🇨🇩', code:'COD 14', name:'Théo Bongonda', missing:true },
+  { group:'K', team:'Congo DR', flag:'🇨🇩', code:'COD 15', name:'Amos Thiris', missing:false },
+  { group:'K', team:'Congo DR', flag:'🇨🇩', code:'COD 16', name:'Déo Kavembe', missing:false },
+  { group:'K', team:'Congo DR', flag:'🇨🇩', code:'COD 17', name:'Alexis Kajangu', missing:false },
+  { group:'K', team:'Congo DR', flag:'🇨🇩', code:'COD 18', name:'Aaron Boupendza', missing:false },
+  { group:'K', team:'Congo DR', flag:'🇨🇩', code:'COD 19', name:'Gieo Kavembe', missing:false },
+  { group:'K', team:'Congo DR', flag:'🇨🇩', code:'COD 20', name:'Wethon Mpoku', missing:false },
+
+  { group:'K', team:'Uzbekistan', flag:'🇺🇿', code:'UZB 1', name:'Badge/Foil', missing:false },
+  { group:'K', team:'Uzbekistan', flag:'🇺🇿', code:'UZB 2', name:'Khilola Khusanov', missing:false },
+  { group:'K', team:'Uzbekistan', flag:'🇺🇿', code:'UZB 3', name:'Dostonbek Khamdamov', missing:false },
+  { group:'K', team:'Uzbekistan', flag:'🇺🇿', code:'UZB 4', name:'Eldor Shomurodov', missing:false },
+  { group:'K', team:'Uzbekistan', flag:'🇺🇿', code:'UZB 5', name:'Otabek Shukurov', missing:false },
+  { group:'K', team:'Uzbekistan', flag:'🇺🇿', code:'UZB 6', name:'Lockheed Emorov', missing:false },
+  { group:'K', team:'Uzbekistan', flag:'🇺🇿', code:'UZB 7', name:'Rustam Ashurmatov', missing:true },
+  { group:'K', team:'Uzbekistan', flag:'🇺🇿', code:'UZB 8', name:'Jakhongir Sidikov', missing:false },
+  { group:'K', team:'Uzbekistan', flag:'🇺🇿', code:'UZB 9', name:'Ilyas Jepbarov', missing:false },
+  { group:'K', team:'Uzbekistan', flag:'🇺🇿', code:'UZB 10', name:'Odiljon Hamrobekov', missing:false },
+  { group:'K', team:'Uzbekistan', flag:'🇺🇿', code:'UZB 11', name:'Diyorbek Kasimov', missing:false },
+  { group:'K', team:'Uzbekistan', flag:'🇺🇿', code:'UZB 12', name:'Gios Soegeev', missing:false },
+  { group:'K', team:'Uzbekistan', flag:'🇺🇿', code:'UZB 13', name:'Team Photo', missing:false },
+  { group:'K', team:'Uzbekistan', flag:'🇺🇿', code:'UZB 14', name:'Husniddin Aliqulov', missing:false },
+  { group:'K', team:'Uzbekistan', flag:'🇺🇿', code:'UZB 15', name:'Ibrokhim Eshmurodov', missing:false },
+  { group:'K', team:'Uzbekistan', flag:'🇺🇿', code:'UZB 16', name:'Jasurbek Yakhshiboev', missing:false },
+  { group:'K', team:'Uzbekistan', flag:'🇺🇿', code:'UZB 17', name:'Abbosjon Muxtorov', missing:false },
+  { group:'K', team:'Uzbekistan', flag:'🇺🇿', code:'UZB 18', name:'Abdukodir Khusanov', missing:false },
+  { group:'K', team:'Uzbekistan', flag:'🇺🇿', code:'UZB 19', name:'Abdulaziz Turobov', missing:false },
+  { group:'K', team:'Uzbekistan', flag:'🇺🇿', code:'UZB 20', name:'Nodirbek Alionov', missing:false },
+
+  { group:'K', team:'Colombia', flag:'🇨🇴', code:'COL 1', name:'Badge/Foil', missing:true },
+  { group:'K', team:'Colombia', flag:'🇨🇴', code:'COL 2', name:'Camilo Vargas', missing:false },
+  { group:'K', team:'Colombia', flag:'🇨🇴', code:'COL 3', name:'Davinson Sanchez', missing:false },
+  { group:'K', team:'Colombia', flag:'🇨🇴', code:'COL 4', name:'Yerry Mina', missing:false },
+  { group:'K', team:'Colombia', flag:'🇨🇴', code:'COL 5', name:'José Enamorado', missing:false },
+  { group:'K', team:'Colombia', flag:'🇨🇴', code:'COL 6', name:'Jhon Córdoba', missing:false },
+  { group:'K', team:'Colombia', flag:'🇨🇴', code:'COL 7', name:'Rodolfo Pires', missing:false },
+  { group:'K', team:'Colombia', flag:'🇨🇴', code:'COL 8', name:'Óscar Estupiñán', missing:false },
+  { group:'K', team:'Colombia', flag:'🇨🇴', code:'COL 9', name:'Daniel Muñoz', missing:false },
+  { group:'K', team:'Colombia', flag:'🇨🇴', code:'COL 10', name:'Juanfer Quintero', missing:false },
+  { group:'K', team:'Colombia', flag:'🇨🇴', code:'COL 11', name:'Luis Díaz', missing:false },
+  { group:'K', team:'Colombia', flag:'🇨🇴', code:'COL 12', name:'Jhon Arias', missing:false },
+  { group:'K', team:'Colombia', flag:'🇨🇴', code:'COL 13', name:'Team Photo', missing:false },
+  { group:'K', team:'Colombia', flag:'🇨🇴', code:'COL 14', name:'Luis Suárez', missing:false },
+  { group:'K', team:'Colombia', flag:'🇨🇴', code:'COL 15', name:'Juan Fernando Quintero', missing:true },
+  { group:'K', team:'Colombia', flag:'🇨🇴', code:'COL 16', name:'Kevin Castaño', missing:false },
+  { group:'K', team:'Colombia', flag:'🇨🇴', code:'COL 17', name:'James Rodríguez', missing:false },
+  { group:'K', team:'Colombia', flag:'🇨🇴', code:'COL 18', name:'Santiago Arias', missing:false },
+  { group:'K', team:'Colombia', flag:'🇨🇴', code:'COL 19', name:'Jefferson Lerma', missing:false },
+  { group:'K', team:'Colombia', flag:'🇨🇴', code:'COL 20', name:'Jhon Lucumí', missing:false },
+
+  // ── GROUP L ──────────────────────────────────────────────
+  { group:'L', team:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', code:'ENG 1', name:'Badge/Foil', missing:false },
+  { group:'L', team:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', code:'ENG 2', name:'Jordan Pickford', missing:true },
+  { group:'L', team:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', code:'ENG 3', name:'Marc Guéhi', missing:false },
+  { group:'L', team:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', code:'ENG 4', name:'Trent Alexander-Arnold', missing:false },
+  { group:'L', team:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', code:'ENG 5', name:'Declan Rice', missing:false },
+  { group:'L', team:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', code:'ENG 6', name:'Ezri Konsa', missing:false },
+  { group:'L', team:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', code:'ENG 7', name:'James Garner', missing:false },
+  { group:'L', team:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', code:'ENG 8', name:'John Stones', missing:false },
+  { group:'L', team:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', code:'ENG 9', name:'Jordan Henderson', missing:true },
+  { group:'L', team:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', code:'ENG 10', name:'Marc Guéhi', missing:false },
+  { group:'L', team:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', code:'ENG 11', name:'Bukayo Saka', missing:false },
+  { group:'L', team:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', code:'ENG 12', name:'Cole Palmer', missing:true },
+  { group:'L', team:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', code:'ENG 13', name:'Team Photo', missing:false },
+  { group:'L', team:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', code:'ENG 14', name:'Morgan Rogers', missing:true },
+  { group:'L', team:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', code:'ENG 15', name:'Anthony Gordon', missing:false },
+  { group:'L', team:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', code:'ENG 16', name:'Phil Foden', missing:false },
+  { group:'L', team:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', code:'ENG 17', name:'Marcus Rashford', missing:false },
+  { group:'L', team:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', code:'ENG 18', name:'Harry Kane', missing:false },
+  { group:'L', team:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', code:'ENG 19', name:'Ollie Watkins', missing:false },
+  { group:'L', team:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', code:'ENG 20', name:'Dani Burn', missing:false },
+
+  { group:'L', team:'Croatia', flag:'🇭🇷', code:'CRO 1', name:'Badge/Foil', missing:false },
+  { group:'L', team:'Croatia', flag:'🇭🇷', code:'CRO 2', name:'Dominik Livaković', missing:false },
+  { group:'L', team:'Croatia', flag:'🇭🇷', code:'CRO 3', name:'Josip Šutalo', missing:false },
+  { group:'L', team:'Croatia', flag:'🇭🇷', code:'CRO 4', name:'Joško Gvardiol', missing:false },
+  { group:'L', team:'Croatia', flag:'🇭🇷', code:'CRO 5', name:'Borna Sosa', missing:false },
+  { group:'L', team:'Croatia', flag:'🇭🇷', code:'CRO 6', name:'Mateo Kovačić', missing:false },
+  { group:'L', team:'Croatia', flag:'🇭🇷', code:'CRO 7', name:'Luka Modrić', missing:false },
+  { group:'L', team:'Croatia', flag:'🇭🇷', code:'CRO 8', name:'Kristijan Jakić', missing:false },
+  { group:'L', team:'Croatia', flag:'🇭🇷', code:'CRO 9', name:'Josip Stanišić', missing:false },
+  { group:'L', team:'Croatia', flag:'🇭🇷', code:'CRO 10', name:'Martin Erlić', missing:false },
+  { group:'L', team:'Croatia', flag:'🇭🇷', code:'CRO 11', name:'Mario Pašalić', missing:false },
+  { group:'L', team:'Croatia', flag:'🇭🇷', code:'CRO 12', name:'Andrej Kramarić', missing:false },
+  { group:'L', team:'Croatia', flag:'🇭🇷', code:'CRO 13', name:'Team Photo (Qualifiers)', missing:false },
+  { group:'L', team:'Croatia', flag:'🇭🇷', code:'CRO 14', name:'Niko Perišić', missing:false },
+  { group:'L', team:'Croatia', flag:'🇭🇷', code:'CRO 15', name:'Petar Sučić', missing:true },
+  { group:'L', team:'Croatia', flag:'🇭🇷', code:'CRO 16', name:'Tomislav Antunović', missing:false },
+  { group:'L', team:'Croatia', flag:'🇭🇷', code:'CRO 17', name:'Marko Pašalić', missing:true },
+  { group:'L', team:'Croatia', flag:'🇭🇷', code:'CRO 18', name:'Ante Budimir', missing:false },
+  { group:'L', team:'Croatia', flag:'🇭🇷', code:'CRO 19', name:'Kristijan Jergović', missing:false },
+  { group:'L', team:'Croatia', flag:'🇭🇷', code:'CRO 20', name:'Andrej Kramarić', missing:false },
+
+  { group:'L', team:'Ghana', flag:'🇬🇭', code:'GHA 1', name:'Badge/Foil', missing:false },
+  { group:'L', team:'Ghana', flag:'🇬🇭', code:'GHA 2', name:'Lawrence Ati-Zigi', missing:false },
+  { group:'L', team:'Ghana', flag:'🇬🇭', code:'GHA 3', name:'Tariq Lamptey', missing:true },
+  { group:'L', team:'Ghana', flag:'🇬🇭', code:'GHA 4', name:'Lawrence Ati-Zigi', missing:false },
+  { group:'L', team:'Ghana', flag:'🇬🇭', code:'GHA 5', name:'Alexander Djiku', missing:false },
+  { group:'L', team:'Ghana', flag:'🇬🇭', code:'GHA 6', name:'Eliezer Kleku', missing:false },
+  { group:'L', team:'Ghana', flag:'🇬🇭', code:'GHA 7', name:'Hale Abdul-Hamid', missing:false },
+  { group:'L', team:'Ghana', flag:'🇬🇭', code:'GHA 8', name:'Mohammed Kudus', missing:false },
+  { group:'L', team:'Ghana', flag:'🇬🇭', code:'GHA 9', name:'Abeku Williams', missing:false },
+  { group:'L', team:'Ghana', flag:'🇬🇭', code:'GHA 10', name:'Iñaki Williams', missing:false },
+  { group:'L', team:'Ghana', flag:'🇬🇭', code:'GHA 11', name:'Joseph Painstil', missing:false },
+  { group:'L', team:'Ghana', flag:'🇬🇭', code:'GHA 12', name:'Mubarak Wakaso', missing:false },
+  { group:'L', team:'Ghana', flag:'🇬🇭', code:'GHA 13', name:'Team Photo', missing:false },
+  { group:'L', team:'Ghana', flag:'🇬🇭', code:'GHA 14', name:'Kyriakos Papadopoulos', missing:false },
+  { group:'L', team:'Ghana', flag:'🇬🇭', code:'GHA 15', name:'Abdul Fatawu Issahaku', missing:false },
+  { group:'L', team:'Ghana', flag:'🇬🇭', code:'GHA 16', name:'Jordan Ayew', missing:true },
+  { group:'L', team:'Ghana', flag:'🇬🇭', code:'GHA 17', name:'Caleb Yirenkyi', missing:false },
+  { group:'L', team:'Ghana', flag:'🇬🇭', code:'GHA 18', name:'Antoine Semenyo', missing:false },
+  { group:'L', team:'Ghana', flag:'🇬🇭', code:'GHA 19', name:'Osei Bonsu', missing:false },
+  { group:'L', team:'Ghana', flag:'🇬🇭', code:'GHA 20', name:'Abdul Issahaku', missing:false },
+
+  { group:'L', team:'Panama', flag:'🇵🇦', code:'PAN 1', name:'Badge/Foil', missing:false },
+  { group:'L', team:'Panama', flag:'🇵🇦', code:'PAN 2', name:'Orlando Mosquera', missing:false },
+  { group:'L', team:'Panama', flag:'🇵🇦', code:'PAN 3', name:'Alfredo Garpa-Cano', missing:false },
+  { group:'L', team:'Panama', flag:'🇵🇦', code:'PAN 4', name:'Fidel Escobar', missing:true },
+  { group:'L', team:'Panama', flag:'🇵🇦', code:'PAN 5', name:'Andrés Andrade', missing:true },
+  { group:'L', team:'Panama', flag:'🇵🇦', code:'PAN 6', name:'Michael Amir Murillo', missing:true },
+  { group:'L', team:'Panama', flag:'🇵🇦', code:'PAN 7', name:'Alberto Quintero', missing:false },
+  { group:'L', team:'Panama', flag:'🇵🇦', code:'PAN 8', name:'José Córdoba', missing:true },
+  { group:'L', team:'Panama', flag:'🇵🇦', code:'PAN 9', name:'Oliver Góvez', missing:false },
+  { group:'L', team:'Panama', flag:'🇵🇦', code:'PAN 10', name:'Raúl Morales', missing:false },
+  { group:'L', team:'Panama', flag:'🇵🇦', code:'PAN 11', name:'Anbal Godoy', missing:true },
+  { group:'L', team:'Panama', flag:'🇵🇦', code:'PAN 12', name:'José Luis Rodríguez', missing:false },
+  { group:'L', team:'Panama', flag:'🇵🇦', code:'PAN 13', name:'Team Photo', missing:false },
+  { group:'L', team:'Panama', flag:'🇵🇦', code:'PAN 14', name:'Edgar Bárcenas', missing:true },
+  { group:'L', team:'Panama', flag:'🇵🇦', code:'PAN 15', name:'Alberto Blackman', missing:false },
+  { group:'L', team:'Panama', flag:'🇵🇦', code:'PAN 16', name:'César Blackman', missing:false },
+  { group:'L', team:'Panama', flag:'🇵🇦', code:'PAN 17', name:'Cristian Martínez', missing:false },
+  { group:'L', team:'Panama', flag:'🇵🇦', code:'PAN 18', name:'Julio Marcelino', missing:false },
+  { group:'L', team:'Panama', flag:'🇵🇦', code:'PAN 19', name:'Adalberto Carrasquilla', missing:false },
+  { group:'L', team:'Panama', flag:'🇵🇦', code:'PAN 20', name:'Eric Davis', missing:false },
+
+  // ── HISTORY ──────────────────────────────────────────────
+  { group:'HISTORY', team:'FIFA World Cup History', flag:'🏆', code:'FWC 1', name:'1930 Uruguay', missing:false },
+  { group:'HISTORY', team:'FIFA World Cup History', flag:'🏆', code:'FWC 2', name:'1934 Italy', missing:false },
+  { group:'HISTORY', team:'FIFA World Cup History', flag:'🏆', code:'FWC 3', name:'1938 Italy', missing:false },
+  { group:'HISTORY', team:'FIFA World Cup History', flag:'🏆', code:'FWC 4', name:'1950 Uruguay', missing:false },
+  { group:'HISTORY', team:'FIFA World Cup History', flag:'🏆', code:'FWC 5', name:'1954 W. Germany', missing:false },
+  { group:'HISTORY', team:'FIFA World Cup History', flag:'🏆', code:'FWC 6', name:'1958 Brazil', missing:false },
+  { group:'HISTORY', team:'FIFA World Cup History', flag:'🏆', code:'FWC 7', name:'1962 Brazil', missing:false },
+  { group:'HISTORY', team:'FIFA World Cup History', flag:'🏆', code:'FWC 8', name:'1966 England', missing:false },
+  { group:'HISTORY', team:'FIFA World Cup History', flag:'🏆', code:'FWC 9', name:'1970 Brazil', missing:false },
+  { group:'HISTORY', team:'FIFA World Cup History', flag:'🏆', code:'FWC 10', name:'1974 W. Germany', missing:false },
+  { group:'HISTORY', team:'FIFA World Cup History', flag:'🏆', code:'FWC 11', name:'1954 Switzerland (Final)', missing:true },
+  { group:'HISTORY', team:'FIFA World Cup History', flag:'🏆', code:'FWC 12', name:'1962 Chile (Final)', missing:true },
+  { group:'HISTORY', team:'FIFA World Cup History', flag:'🏆', code:'FWC 13', name:'1978 Argentina', missing:false },
+  { group:'HISTORY', team:'FIFA World Cup History', flag:'🏆', code:'FWC 14', name:'1982 Italy', missing:false },
+  { group:'HISTORY', team:'FIFA World Cup History', flag:'🏆', code:'FWC 15', name:'1986 Argentina', missing:false },
+  { group:'HISTORY', team:'FIFA World Cup History', flag:'🏆', code:'FWC 16', name:'1990 W. Germany', missing:false },
+  { group:'HISTORY', team:'FIFA World Cup History', flag:'🏆', code:'FWC 17', name:'1994 Brazil', missing:false },
+  { group:'HISTORY', team:'FIFA World Cup History', flag:'🏆', code:'FWC 18', name:'1998 France', missing:false },
+  { group:'HISTORY', team:'FIFA World Cup History', flag:'🏆', code:'FWC 19', name:'2022 Qatar (Final)', missing:true },
+  { group:'HISTORY', team:'FIFA World Cup History', flag:'🏆', code:'FWC 20', name:'2002 Brazil', missing:false },
+  { group:'HISTORY', team:'FIFA World Cup History', flag:'🏆', code:'FWC 21', name:'2006 Italy', missing:false },
+  { group:'HISTORY', team:'FIFA World Cup History', flag:'🏆', code:'FWC 22', name:'2010 Spain', missing:false },
+  { group:'HISTORY', team:'FIFA World Cup History', flag:'🏆', code:'FWC 23', name:'2014 Germany', missing:false },
+  { group:'HISTORY', team:'FIFA World Cup History', flag:'🏆', code:'FWC 24', name:'2018 France', missing:false },
+
+  // ── COCA-COLA ─────────────────────────────────────────────
+  { group:'COCA', team:'Coca-Cola Special Edition', flag:'🥤', code:'CC1', name:'Lamine Yamal', missing:true },
+  { group:'COCA', team:'Coca-Cola Special Edition', flag:'🥤', code:'CC2', name:'Lautaro Martínez', missing:false },
+  { group:'COCA', team:'Coca-Cola Special Edition', flag:'🥤', code:'CC3', name:'Harry Kane', missing:true },
+  { group:'COCA', team:'Coca-Cola Special Edition', flag:'🥤', code:'CC4', name:'Santiago Giménez', missing:true },
+  { group:'COCA', team:'Coca-Cola Special Edition', flag:'🥤', code:'CC5', name:'Joshua Kimmich', missing:false },
+  { group:'COCA', team:'Coca-Cola Special Edition', flag:'🥤', code:'CC6', name:'Virgil van Dijk', missing:true },
+  { group:'COCA', team:'Coca-Cola Special Edition', flag:'🥤', code:'CC7', name:'Alphonse Davies', missing:true },
+  { group:'COCA', team:'Coca-Cola Special Edition', flag:'🥤', code:'CC8', name:'Gabriel Magalhães', missing:true },
+  { group:'COCA', team:'Coca-Cola Special Edition', flag:'🥤', code:'CC9', name:'Jefferson Lerma', missing:true },
+  { group:'COCA', team:'Coca-Cola Special Edition', flag:'🥤', code:'CC10', name:'Nico Slimani', missing:true },
+];
+
+// ── STATE ──────────────────────────────────────────────────
+let owned = JSON.parse(localStorage.getItem('wc26_owned') || '{}');
+let filterMode = 'all';
+let searchTerm = '';
+
+// ── HELPERS ────────────────────────────────────────────────
+function isOwned(code) {
+  if (owned[code] !== undefined) return owned[code];
+  // Default: if marked missing in scan, not owned; else owned
+  const s = ALBUM.find(x => x.code === code);
+  return s ? !s.missing : false;
+}
+
+function toggleOwned(code) {
+  owned[code] = !isOwned(code);
+  localStorage.setItem('wc26_owned', JSON.stringify(owned));
+  updateStats();
+  renderAll();
+}
+
+function updateStats() {
+  const total = ALBUM.length;
+  const haveCount = ALBUM.filter(s => isOwned(s.code)).length;
+  const missingCount = total - haveCount;
+  const pct = Math.round((haveCount / total) * 100);
+  document.getElementById('stat-have').textContent = haveCount;
+  document.getElementById('stat-missing').textContent = missingCount;
+  document.getElementById('stat-pct').textContent = pct + '%';
+  document.getElementById('progress-bar').style.width = pct + '%';
+}
+
+function setFilter(mode, btn) {
+  filterMode = mode;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderAll();
+}
+
+function filterAll() {
+  searchTerm = document.getElementById('search').value.toLowerCase();
+  renderAll();
+}
+
+function scrollToGroup(g) {
+  if (!g) return;
+  const el = document.getElementById('group-' + g);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function resetAll() {
+  if (!confirm('Reset all stickers to their original scanned state?')) return;
+  owned = {};
+  localStorage.setItem('wc26_owned', JSON.stringify(owned));
+  updateStats();
+  renderAll();
+}
+
+// ── RENDER ─────────────────────────────────────────────────
+const GROUP_NAMES = {
+  A:'Group A', B:'Group B', C:'Group C', D:'Group D',
+  E:'Group E', F:'Group F', G:'Group G', H:'Group H',
+  I:'Group I', J:'Group J', K:'Group K', L:'Group L',
+  HISTORY:'FIFA World Cup History', COCA:'Coca-Cola Special Edition'
+};
+
+function renderAll() {
+  const main = document.getElementById('main-content');
+  const groups = [...new Set(ALBUM.map(s => s.group))];
+
+  let html = '';
+  for (const group of groups) {
+    const stickers = ALBUM.filter(s => s.group === group);
+    const teams = [...new Set(stickers.map(s => s.team))];
+
+    let groupHtml = '';
+    for (const team of teams) {
+      const ts = stickers.filter(s => s.team === team);
+      let chips = '';
+      let anyVisible = false;
+
+      for (const s of ts) {
+        const owned_ = isOwned(s.code);
+        const missing_ = !owned_;
+        if (filterMode === 'missing' && owned_) continue;
+        if (filterMode === 'have' && missing_) continue;
+        if (searchTerm && !s.team.toLowerCase().includes(searchTerm) &&
+            !s.code.toLowerCase().includes(searchTerm) &&
+            !s.name.toLowerCase().includes(searchTerm)) continue;
+        anyVisible = true;
+        const cls = owned_ ? 'have' : 'missing';
+        chips += `<div class="sticker-chip ${cls}" onclick="toggleOwned('${s.code}')">
+          <span class="code">${s.code}</span>
+          <span class="name-label">${s.name}</span>
+        </div>`;
+      }
+
+      if (!anyVisible) continue;
+      const haveT = ts.filter(s => isOwned(s.code)).length;
+      const allDone = haveT === ts.length;
+      groupHtml += `<div class="team-card${allDone?' complete':''}">
+        <div class="team-header">
+          <span class="team-flag">${ts[0].flag}</span>
+          <span class="team-name">${team}</span>
+          <span class="team-count${allDone?' done':''}">
+            ${haveT}/${ts.length}${allDone?' ✓':''}
+          </span>
+        </div>
+        <div class="stickers-list">${chips}</div>
+      </div>`;
+    }
+
+    if (!groupHtml) continue;
+
+    const gStickers = stickers.filter(s => {
+      if (filterMode === 'missing' && isOwned(s.code)) return false;
+      if (filterMode === 'have' && !isOwned(s.code)) return false;
+      if (searchTerm && !s.team.toLowerCase().includes(searchTerm) &&
+          !s.code.toLowerCase().includes(searchTerm) &&
+          !s.name.toLowerCase().includes(searchTerm)) return false;
+      return true;
+    });
+    if (!gStickers.length) continue;
+
+    const gHave = stickers.filter(s => isOwned(s.code)).length;
+    html += `<div class="group-section" id="group-${group}">
+      <div class="group-header">
+        <span class="group-badge">${group}</span>
+        <span class="group-name">${GROUP_NAMES[group]}</span>
+        <span class="group-progress"><span>${gHave}</span>/${stickers.length}</span>
+      </div>
+      <div class="teams-grid">${groupHtml}</div>
+    </div>`;
+  }
+
+  main.innerHTML = html || '<div class="empty-state">No stickers match your search. Try a different filter.</div>';
+}
+
+// init
+updateStats();
+renderAll();
+</script>
+</body>
+</html>
