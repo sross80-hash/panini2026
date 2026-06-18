@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panini FIFA World Cup 2026 – Sticker Tracker</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #161920;
+    --card: #1e2230;
+    --border: #2a2f40;
+    --accent: #e8c53a;
+    --accent2: #e84c3a;
+    --green: #3ae87f;
+    --purple: #a87fe8;
+    --orange: #e8954c;
+    --text: #e8ecf0;
+    --muted: #7a8294;
+    --radius: 10px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; min-height: 100vh; }
+
+  header {
+    background: linear-gradient(135deg, #1a1060 0%, #0d0f14 60%);
+    border-bottom: 2px solid var(--accent);
+    padding: 20px 24px 16px; display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 12px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .trophy { font-size: 36px; }
+  .header-title h1 { font-family: 'Bebas Neue', sans-serif; font-size: 28px; letter-spacing: 2px; color: var(--accent); line-height: 1; }
+  .header-title p { font-size: 11px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+  .header-stats { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .stat-pill { background: var(--card); border: 1px solid var(--border); border-radius: 999px; padding: 6px 16px; text-align: center; }
+  .stat-pill .val { font-family: 'Bebas Neue', sans-serif; font-size: 22px; line-height: 1; }
+  .stat-pill .lbl { font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .val.missing { color: var(--accent2); }
+  .val.have { color: var(--green); }
+  .val.pct { color: var(--accent); }
+  .val.flag { color: var(--purple); }
+
+  .progress-bar-wrap { width: 100%; background: var(--card); height: 6px; border-radius: 3px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent), var(--green)); transition: width 0.4s ease; border-radius: 3px; }
+
+  .controls { padding: 16px 24px; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .search-box { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 14px; color: var(--text); font-size: 13px; font-family: 'Inter', sans-serif; width: 200px; outline: none; }
+  .search-box:focus { border-color: var(--accent); }
+  .search-box::placeholder { color: var(--muted); }
+  .filter-btn { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 14px; color: var(--text); font-size: 12px; font-family: 'Inter', sans-serif; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .filter-btn.active { background: var(--accent); color: #000; border-color: var(--accent); font-weight: 700; }
+  .group-select { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 8px 14px; color: var(--text); font-size: 12px; font-family: 'Inter', sans-serif; cursor: pointer; outline: none; }
+  .btn-reset { background: var(--accent2); border: none; border-radius: var(--radius); padding: 8px 16px; color: #fff; font-size: 12px; font-weight: 600; cursor: pointer; margin-left: auto; }
+  .btn-reset:hover { opacity: 0.85; }
+
+  main { padding: 16px 24px 40px; }
+
+  /* SUMMARY SECTIONS */
+  .summary-section { margin-bottom: 16px; border-radius: var(--radius); padding: 14px 18px; }
+  .summary-section h3 { font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 1px; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .summary-section .count-badge { font-size: 11px; background: rgba(255,255,255,0.12); padding: 2px 8px; border-radius: 999px; font-family: 'Inter', sans-serif; }
+  .sec-foil { background: linear-gradient(135deg, #1a1830 0%, #14121f 100%); border: 1px solid var(--purple); }
+  .sec-foil h3 { color: var(--purple); }
+  .sec-photo { background: linear-gradient(135deg, #1a2818 0%, #121f12 100%); border: 1px solid var(--green); }
+  .sec-photo h3 { color: var(--green); }
+  .sec-replace { background: #2a1515; border: 1px solid var(--accent2); }
+  .sec-replace h3 { color: var(--accent2); }
+  .sec-secondary { background: #1f1a2e; border: 1px solid var(--purple); }
+  .sec-secondary h3 { color: var(--purple); }
+  .sec-done { background: linear-gradient(135deg, #14241a 0%, #0f1f14 100%); border: 1px solid var(--green); }
+  .sec-done h3 { color: var(--green); }
+
+  .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .mini-chip { display: inline-flex; align-items: center; gap: 5px; background: var(--card); border: 1px solid var(--border); border-radius: 6px; padding: 4px 9px; font-size: 11px; }
+  .mini-chip .flag { font-size: 14px; }
+  .mini-chip .code { font-family: 'Bebas Neue', sans-serif; font-size: 13px; color: var(--accent); }
+  .mini-chip.done-chip { border-color: var(--green); }
+  .mini-chip.done-chip .code { color: var(--green); }
+  .info-line { font-size: 11px; color: var(--muted); margin-bottom: 8px; }
+
+  .collapse-toggle { cursor: pointer; user-select: none; }
+  .collapse-toggle .arrow { transition: transform 0.2s; display: inline-block; }
+  .collapsed .arrow { transform: rotate(-90deg); }
+  .collapsed .summary-body { display: none; }
+
+  /* GROUP / TEAM */
+  .group-section { margin-bottom: 28px; }
+  .group-header { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 2px solid var(--border); }
+  .group-badge { font-family: 'Bebas Neue', sans-serif; font-size: 13px; background: var(--accent); color: #000; padding: 2px 10px; border-radius: 4px; letter-spacing: 1px; }
+  .group-name { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 1px; }
+  .group-progress { margin-left: auto; font-size: 11px; color: var(--muted); }
+  .group-progress span { color: var(--accent); font-weight: 700; }
+
+  .teams-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 12px; }
+  .team-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: border-color 0.2s; }
+  .team-card.complete { border-color: var(--green); box-shadow: 0 0 0 1px var(--green) inset; }
+  .team-card:hover { border-color: var(--accent); }
+  .team-header { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: var(--surface); border-bottom: 1px solid var(--border); }
+  .team-flag { font-size: 22px; }
+  .team-name { font-weight: 700; font-size: 13px; flex: 1; }
+  .team-count { font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .team-count.done { color: var(--green); font-weight: 700; }
+
+  .stickers-list { padding: 10px 14px; display: flex; flex-wrap: wrap; gap: 6px; }
+  .sticker-chip { display: flex; align-items: center; gap: 5px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; cursor: pointer; transition: all 0.15s; user-select: none; font-size: 11px; position: relative; }
+  .sticker-chip:hover { border-color: var(--accent); }
+  .sticker-chip.have { background: #0d2b1a; border-color: var(--green); color: var(--green); opacity: 0.75; }
+  .sticker-chip.have .name-label { color: #4a7a5a; }
+  .sticker-chip.have .code { text-decoration: line-through; }
+  .sticker-chip.missing { border-color: var(--accent2); color: #f4a0a0; }
+  .sticker-chip.secondary { border-color: var(--purple); background: #1f1a2e; color: var(--purple); }
+  .sticker-chip.replace { border-color: var(--orange); background: #2a2015; color: var(--orange); }
+  .sticker-chip.foil-marker::after { content:'✦'; position:absolute; top:-5px; right:-3px; font-size:10px; color: var(--purple); }
+  .sticker-chip .code { font-family: 'Bebas Neue', sans-serif; font-size: 13px; letter-spacing: 0.5px; }
+  .sticker-chip .name-label { font-size: 10px; color: var(--muted); max-width: 110px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .sticker-chip .tag { font-size: 8px; text-transform: uppercase; letter-spacing: 0.5px; padding: 1px 4px; border-radius: 3px; margin-left: 2px; }
+  .tag.sec { background: var(--purple); color: #000; }
+  .tag.rep { background: var(--orange); color: #000; }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 11px; color: var(--muted); padding: 0 24px 12px; }
+  .legend span { display: inline-flex; align-items: center; gap: 5px; }
+  .legend .dot { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+  .dot.have { background: var(--green); }
+  .dot.missing { background: var(--accent2); }
+  .dot.secondary { background: var(--purple); }
+  .dot.replace { background: var(--orange); }
+
+  .empty-state { text-align: center; padding: 40px; color: var(--muted); font-size: 14px; }
+  footer { text-align: center; padding: 20px; color: var(--muted); font-size: 11px; border-top: 1px solid var(--border); }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <div class="trophy">🏆</div>
+    <div class="header-title">
+      <h1>Panini FIFA World Cup 2026</h1>
+      <p>Sticker Collection Tracker · Updated 18 June 2026</p>
+    </div>
+  </div>
+  <div class="header-stats">
+    <div class="stat-pill"><div class="val have" id="stat-have">0</div><div class="lbl">Collected</div></div>
+    <div class="stat-pill"><div class="val missing" id="stat-missing">0</div><div class="lbl">Still need</div></div>
+    <div class="stat-pill"><div class="val flag" id="stat-flag">0</div><div class="lbl">In 2nd book</div></div>
+    <div class="stat-pill"><div class="val pct" id="stat-pct">0%</div><div class="lbl">Complete</div></div>
+  </div>
+  <div style="width:100%; padding-top:4px;"><div class="progress-bar-wrap"><div class="progress-bar-fill" id="progress-bar" style="width:0%"></div></div></div>
+</header>
+
+<div class="controls">
+  <input class="search-box" type="text" id="search" placeholder="🔍  Search team or sticker…" oninput="filterAll()">
+  <button class="filter-btn active" onclick="setFilter('all', this)">All</button>
+  <button class="filter-btn" onclick="setFilter('missing', this)">Still need</button>
+  <button class="filter-btn" onclick="setFilter('have', this)">Collected</button>
+  <button class="filter-btn" onclick="setFilter('special', this)">Flags only</button>
+  <select class="group-select" onchange="scrollToGroup(this.value)">
+    <option value="">Jump to…</option>
+    <option value="summary">Summary sections</option>
+    <option value="A">Group A</option><option value="B">Group B</option>
+    <option value="C">Group C</option><option value="D">Group D</option>
+    <option value="E">Group E</option><option value="F">Group F</option>
+    <option value="G">Group G</option><option value="H">Group H</option>
+    <option value="I">Group I</option><option value="J">Group J</option>
+    <option value="K">Group K</option><option value="L">Group L</option>
+    <option value="EXTRA">Host / Emblems</option>
+    <option value="HISTORY">History</option>
+    <option value="COCA">Coca-Cola</option>
+  </select>
+  <button class="btn-reset" onclick="resetAll()">Reset all</button>
+</div>
+
+<div class="legend">
+  <span><span class="dot have"></span> Collected</span>
+  <span><span class="dot missing"></span> Still need</span>
+  <span><span class="dot secondary"></span> Have in 2nd book (pencil mark)</span>
+  <span><span class="dot replace"></span> Needs replacement</span>
+  <span>✦ = foil / shiny</span>
+</div>
+
+<main id="main-content"></main>
+
+<footer>Tap any sticker to cycle its status. Progress saves in this browser. Scanned from album photos · 18 June 2026</footer>
+
+<script>
+// status: have | missing | secondary | replace
+// 'secondary' = pencil scribble, have it in secondary book (counts toward "in 2nd book", NOT toward collected)
+// 'replace'   = sticker present but wrong/damaged, treat as still-needed
+
+const ALBUM = [
+  // EXTRA — Host countries & emblems (FWC foil specials)
+  { group:'EXTRA', team:'Tournament Specials', flag:'🏆', code:'FWC 1', name:'Official Emblem (foil)', foil:true, status:'have' },
+  { group:'EXTRA', team:'Tournament Specials', flag:'🏆', code:'FWC 5', name:'Official Ball', status:'missing' },
+  { group:'EXTRA', team:'Tournament Specials', flag:'🇨🇦', code:'FWC 6', name:'Canada Host Emblem (foil)', foil:true, status:'missing' },
+  { group:'EXTRA', team:'Tournament Specials', flag:'🇲🇽', code:'FWC 7', name:'Mexico Host Emblem (foil)', foil:true, status:'have' },
+  { group:'EXTRA', team:'Tournament Specials', flag:'🇺🇸', code:'FWC 8', name:'USA Host Emblem (foil)', foil:true, status:'missing' },
+
+  // GROUP A
+  { group:'A', team:'Mexico', flag:'🇲🇽', code:'MEX 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'A', team:'Mexico', flag:'🇲🇽', code:'MEX 3', name:'Jorge Sánchez', status:'have' },
+  { group:'A', team:'Mexico', flag:'🇲🇽', code:'MEX 9', name:'Carlos Rodríguez', status:'missing' },
+  { group:'A', team:'Mexico', flag:'🇲🇽', code:'MEX 11', name:'Orbelin Pineda', status:'missing' },
+  { group:'A', team:'Mexico', flag:'🇲🇽', code:'MEX 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'A', team:'Mexico', flag:'🇲🇽', code:'MEX rest', name:'All other players', status:'have' },
+
+  { group:'A', team:'South Africa', flag:'🇿🇦', code:'RSA 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'A', team:'South Africa', flag:'🇿🇦', code:'RSA 2', name:'Ronwen Williams', status:'missing' },
+  { group:'A', team:'South Africa', flag:'🇿🇦', code:'RSA 5', name:'Samukele Kabini', status:'missing' },
+  { group:'A', team:'South Africa', flag:'🇿🇦', code:'RSA 11', name:'Teboho Mokoena', status:'missing' },
+  { group:'A', team:'South Africa', flag:'🇿🇦', code:'RSA 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'A', team:'South Africa', flag:'🇿🇦', code:'RSA 15', name:'Vina Sithole', status:'missing' },
+  { group:'A', team:'South Africa', flag:'🇿🇦', code:'RSA rest', name:'All other players', status:'have' },
+
+  { group:'A', team:'Korea Republic', flag:'🇰🇷', code:'KOR 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'A', team:'Korea Republic', flag:'🇰🇷', code:'KOR 4', name:'Minjae Kim', status:'missing' },
+  { group:'A', team:'Korea Republic', flag:'🇰🇷', code:'KOR 6', name:'Youngwoo Seol', status:'missing' },
+  { group:'A', team:'Korea Republic', flag:'🇰🇷', code:'KOR 10', name:'Jaesung Lee', status:'missing' },
+  { group:'A', team:'Korea Republic', flag:'🇰🇷', code:'KOR 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'A', team:'Korea Republic', flag:'🇰🇷', code:'KOR 17', name:'Guebung Cho', status:'missing' },
+  { group:'A', team:'Korea Republic', flag:'🇰🇷', code:'KOR 19', name:'Heechan Hwang', status:'missing' },
+  { group:'A', team:'Korea Republic', flag:'🇰🇷', code:'KOR rest', name:'All other players', status:'have' },
+
+  { group:'A', team:'Czechia', flag:'🇨🇿', code:'CZE 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'A', team:'Czechia', flag:'🇨🇿', code:'CZE 5', name:'Vladimir Coufal', status:'missing' },
+  { group:'A', team:'Czechia', flag:'🇨🇿', code:'CZE 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'A', team:'Czechia', flag:'🇨🇿', code:'CZE 16', name:'Vasil Kušej', status:'missing' },
+  { group:'A', team:'Czechia', flag:'🇨🇿', code:'CZE rest', name:'All other players', status:'have' },
+
+  // GROUP B
+  { group:'B', team:'Canada', flag:'🇨🇦', code:'CAN 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'B', team:'Canada', flag:'🇨🇦', code:'CAN 2', name:'Dayne St. Clair', status:'missing' },
+  { group:'B', team:'Canada', flag:'🇨🇦', code:'CAN 9', name:'Kamal Miller', status:'missing' },
+  { group:'B', team:'Canada', flag:'🇨🇦', code:'CAN 13', name:'Team Photo', photo:true, status:'missing' },
+  { group:'B', team:'Canada', flag:'🇨🇦', code:'CAN rest', name:'All other players', status:'have' },
+
+  { group:'B', team:'Bosnia-Herzegovina', flag:'🇧🇦', code:'BIH 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'B', team:'Bosnia-Herzegovina', flag:'🇧🇦', code:'BIH 9', name:'Benjamin Tahirović', status:'missing' },
+  { group:'B', team:'Bosnia-Herzegovina', flag:'🇧🇦', code:'BIH 10', name:'Armin Gigović', status:'missing' },
+  { group:'B', team:'Bosnia-Herzegovina', flag:'🇧🇦', code:'BIH 12', name:'Ivan Bašić', status:'missing' },
+  { group:'B', team:'Bosnia-Herzegovina', flag:'🇧🇦', code:'BIH 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'B', team:'Bosnia-Herzegovina', flag:'🇧🇦', code:'BIH 17', name:'Ermedin Demirović', status:'missing' },
+  { group:'B', team:'Bosnia-Herzegovina', flag:'🇧🇦', code:'BIH 19', name:'Samed Baždar', status:'missing' },
+  { group:'B', team:'Bosnia-Herzegovina', flag:'🇧🇦', code:'BIH rest', name:'All other players', status:'have' },
+
+  { group:'B', team:'Qatar', flag:'🇶🇦', code:'QAT 1', name:'Badge (foil)', foil:true, status:'missing' },
+  { group:'B', team:'Qatar', flag:'🇶🇦', code:'QAT 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'B', team:'Qatar', flag:'🇶🇦', code:'QAT rest', name:'All players', status:'have' },
+
+  { group:'B', team:'Switzerland', flag:'🇨🇭', code:'SUI 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'B', team:'Switzerland', flag:'🇨🇭', code:'SUI 7', name:'Aurèle Amenda', status:'missing' },
+  { group:'B', team:'Switzerland', flag:'🇨🇭', code:'SUI 13', name:'Team Photo', photo:true, status:'missing' },
+  { group:'B', team:'Switzerland', flag:'🇨🇭', code:'SUI 20', name:'Zeki Amdouni', status:'missing' },
+  { group:'B', team:'Switzerland', flag:'🇨🇭', code:'SUI rest', name:'All other players', status:'have' },
+
+  // GROUP C
+  { group:'C', team:'Brazil', flag:'🇧🇷', code:'BRA 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'C', team:'Brazil', flag:'🇧🇷', code:'BRA 12', name:'Luiz Henrique', status:'missing' },
+  { group:'C', team:'Brazil', flag:'🇧🇷', code:'BRA 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'C', team:'Brazil', flag:'🇧🇷', code:'BRA rest', name:'All other players', status:'have' },
+
+  { group:'C', team:'Morocco', flag:'🇲🇦', code:'MAR 1', name:'Badge (foil)', foil:true, status:'missing' },
+  { group:'C', team:'Morocco', flag:'🇲🇦', code:'MAR 2', name:'Yassine Bounou', status:'missing' },
+  { group:'C', team:'Morocco', flag:'🇲🇦', code:'MAR 7', name:'Romain Saïss', status:'missing' },
+  { group:'C', team:'Morocco', flag:'🇲🇦', code:'MAR 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'C', team:'Morocco', flag:'🇲🇦', code:'MAR 15', name:'Ismael Saibari', status:'missing' },
+  { group:'C', team:'Morocco', flag:'🇲🇦', code:'MAR rest', name:'All other players', status:'have' },
+
+  { group:'C', team:'Haiti', flag:'🇭🇹', code:'HAI 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'C', team:'Haiti', flag:'🇭🇹', code:'HAI 13', name:'Team Photo', photo:true, status:'missing' },
+  { group:'C', team:'Haiti', flag:'🇭🇹', code:'HAI rest', name:'All players', status:'have' },
+
+  { group:'C', team:'Scotland', flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', code:'SCO 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'C', team:'Scotland', flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', code:'SCO 2', name:'Angus Gunn', status:'missing' },
+  { group:'C', team:'Scotland', flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', code:'SCO 5', name:'Aaron Hickey', status:'missing' },
+  { group:'C', team:'Scotland', flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', code:'SCO 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'C', team:'Scotland', flag:'🏴󠁧󠁢󠁳󠁣󠁴󠁿', code:'SCO rest', name:'All other players', status:'have' },
+
+  // GROUP D
+  { group:'D', team:'USA', flag:'🇺🇸', code:'USA 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'D', team:'USA', flag:'🇺🇸', code:'USA 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'D', team:'USA', flag:'🇺🇸', code:'USA 19', name:'Haji Wright', status:'missing' },
+  { group:'D', team:'USA', flag:'🇺🇸', code:'USA rest', name:'All other players', status:'have' },
+
+  { group:'D', team:'Paraguay', flag:'🇵🇾', code:'PAR 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'D', team:'Paraguay', flag:'🇵🇾', code:'PAR 2', name:'Roberto Fernández', status:'secondary' },
+  { group:'D', team:'Paraguay', flag:'🇵🇾', code:'PAR 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'D', team:'Paraguay', flag:'🇵🇾', code:'PAR 18', name:'Ramón Sosa', status:'missing' },
+  { group:'D', team:'Paraguay', flag:'🇵🇾', code:'PAR 19', name:'Ángel Romero', status:'missing' },
+  { group:'D', team:'Paraguay', flag:'🇵🇾', code:'PAR rest', name:'All other players', status:'have' },
+
+  { group:'D', team:'Australia', flag:'🇦🇺', code:'AUS 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'D', team:'Australia', flag:'🇦🇺', code:'AUS 4', name:'Harry Souttar', status:'missing' },
+  { group:'D', team:'Australia', flag:'🇦🇺', code:'AUS 6', name:'Jordan Bos', status:'missing' },
+  { group:'D', team:'Australia', flag:'🇦🇺', code:'AUS 13', name:'Team Photo', photo:true, status:'missing' },
+  { group:'D', team:'Australia', flag:'🇦🇺', code:'AUS rest', name:'All other players', status:'have' },
+
+  { group:'D', team:'Türkiye', flag:'🇹🇷', code:'TUR 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'D', team:'Türkiye', flag:'🇹🇷', code:'TUR 13', name:'Team Photo', photo:true, status:'missing' },
+  { group:'D', team:'Türkiye', flag:'🇹🇷', code:'TUR 16', name:'Yunus Akgün', status:'missing' },
+  { group:'D', team:'Türkiye', flag:'🇹🇷', code:'TUR 20', name:'Kenan Yıldız', status:'missing' },
+  { group:'D', team:'Türkiye', flag:'🇹🇷', code:'TUR rest', name:'All other players', status:'have' },
+
+  // GROUP E
+  { group:'E', team:'Germany', flag:'🇩🇪', code:'GER 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'E', team:'Germany', flag:'🇩🇪', code:'GER 8', name:'Ridle Baku', status:'missing' },
+  { group:'E', team:'Germany', flag:'🇩🇪', code:'GER 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'E', team:'Germany', flag:'🇩🇪', code:'GER 17', name:'Kai Havertz', status:'missing' },
+  { group:'E', team:'Germany', flag:'🇩🇪', code:'GER rest', name:'All other players', status:'have' },
+
+  { group:'E', team:'Curaçao', flag:'🇨🇼', code:'CUW 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'E', team:'Curaçao', flag:'🇨🇼', code:'CUW 2', name:'Eloy Room', status:'missing' },
+  { group:'E', team:'Curaçao', flag:'🇨🇼', code:'CUW 9', name:'Livano Comenencia', status:'missing' },
+  { group:'E', team:'Curaçao', flag:'🇨🇼', code:'CUW 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'E', team:'Curaçao', flag:'🇨🇼', code:'CUW rest', name:'All other players', status:'have' },
+
+  { group:'E', team:"Côte d'Ivoire", flag:'🇨🇮', code:'CIV 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'E', team:"Côte d'Ivoire", flag:'🇨🇮', code:'CIV 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'E', team:"Côte d'Ivoire", flag:'🇨🇮', code:'CIV 20', name:'Oumar Diakité', status:'missing' },
+  { group:'E', team:"Côte d'Ivoire", flag:'🇨🇮', code:'CIV rest', name:'All other players', status:'have' },
+
+  { group:'E', team:'Ecuador', flag:'🇪🇨', code:'ECU 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'E', team:'Ecuador', flag:'🇪🇨', code:'ECU 11', name:'Kendry Páez', status:'missing' },
+  { group:'E', team:'Ecuador', flag:'🇪🇨', code:'ECU 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'E', team:'Ecuador', flag:'🇪🇨', code:'ECU 15', name:'Leonardo Campana (badly placed)', status:'replace' },
+  { group:'E', team:'Ecuador', flag:'🇪🇨', code:'ECU 16', name:'Gonzalo Plata', status:'missing' },
+  { group:'E', team:'Ecuador', flag:'🇪🇨', code:'ECU rest', name:'All other players', status:'have' },
+
+  // GROUP F
+  { group:'F', team:'Netherlands', flag:'🇳🇱', code:'NED 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'F', team:'Netherlands', flag:'🇳🇱', code:'NED 6', name:'Denzel Dumfries', status:'missing' },
+  { group:'F', team:'Netherlands', flag:'🇳🇱', code:'NED 13', name:'Team Photo', photo:true, status:'missing' },
+  { group:'F', team:'Netherlands', flag:'🇳🇱', code:'NED 17', name:'Memphis Depay', status:'missing' },
+  { group:'F', team:'Netherlands', flag:'🇳🇱', code:'NED rest', name:'All other players', status:'have' },
+
+  { group:'F', team:'Japan', flag:'🇯🇵', code:'JPN 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'F', team:'Japan', flag:'🇯🇵', code:'JPN 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'F', team:'Japan', flag:'🇯🇵', code:'JPN rest', name:'All players', status:'have' },
+
+  { group:'F', team:'Sweden', flag:'🇸🇪', code:'SWE 1', name:'Badge (foil)', foil:true, status:'missing' },
+  { group:'F', team:'Sweden', flag:'🇸🇪', code:'SWE 7', name:'Gustaf Lagerbielke', status:'missing' },
+  { group:'F', team:'Sweden', flag:'🇸🇪', code:'SWE 10', name:'Jesper Karlström', status:'missing' },
+  { group:'F', team:'Sweden', flag:'🇸🇪', code:'SWE 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'F', team:'Sweden', flag:'🇸🇪', code:'SWE rest', name:'All other players', status:'have' },
+
+  { group:'F', team:'Tunisia', flag:'🇹🇳', code:'TUN 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'F', team:'Tunisia', flag:'🇹🇳', code:'TUN 5', name:'Montassar Talbi', status:'secondary' },
+  { group:'F', team:'Tunisia', flag:'🇹🇳', code:'TUN 6', name:'Yassine Mériah', status:'missing' },
+  { group:'F', team:'Tunisia', flag:'🇹🇳', code:'TUN 10', name:'Aïssa Laïdouni', status:'missing' },
+  { group:'F', team:'Tunisia', flag:'🇹🇳', code:'TUN 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'F', team:'Tunisia', flag:'🇹🇳', code:'TUN 15', name:'Elias Achouri', status:'missing' },
+  { group:'F', team:'Tunisia', flag:'🇹🇳', code:'TUN 17', name:'Hazem Mastouri', status:'missing' },
+  { group:'F', team:'Tunisia', flag:'🇹🇳', code:'TUN rest', name:'All other players', status:'have' },
+
+  // GROUP G
+  { group:'G', team:'Belgium', flag:'🇧🇪', code:'BEL 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'G', team:'Belgium', flag:'🇧🇪', code:'BEL 6', name:'Brandon Mechele', status:'missing' },
+  { group:'G', team:'Belgium', flag:'🇧🇪', code:'BEL 7', name:'Maxim De Cuyper', status:'missing' },
+  { group:'G', team:'Belgium', flag:'🇧🇪', code:'BEL 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'G', team:'Belgium', flag:'🇧🇪', code:'BEL rest', name:'All other players', status:'have' },
+
+  { group:'G', team:'Egypt', flag:'🇪🇬', code:'EGV 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'G', team:'Egypt', flag:'🇪🇬', code:'EGV 2', name:'Mohamed Elshenawy', status:'missing' },
+  { group:'G', team:'Egypt', flag:'🇪🇬', code:'EGV 13', name:'Team Photo', photo:true, status:'missing' },
+  { group:'G', team:'Egypt', flag:'🇪🇬', code:'EGV rest', name:'All other players', status:'have' },
+
+  { group:'G', team:'IR Iran', flag:'🇮🇷', code:'IRN 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'G', team:'IR Iran', flag:'🇮🇷', code:'IRN 5', name:'Milad Mohammadi', status:'missing' },
+  { group:'G', team:'IR Iran', flag:'🇮🇷', code:'IRN 9', name:'Sadegh Moharrami', status:'missing' },
+  { group:'G', team:'IR Iran', flag:'🇮🇷', code:'IRN 13', name:'Team Photo', photo:true, status:'missing' },
+  { group:'G', team:'IR Iran', flag:'🇮🇷', code:'IRN rest', name:'All other players', status:'have' },
+
+  { group:'G', team:'New Zealand', flag:'🇳🇿', code:'NZL 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'G', team:'New Zealand', flag:'🇳🇿', code:'NZL 9', name:'Finn Surman', status:'missing' },
+  { group:'G', team:'New Zealand', flag:'🇳🇿', code:'NZL 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'G', team:'New Zealand', flag:'🇳🇿', code:'NZL rest', name:'All other players', status:'have' },
+
+  // GROUP H
+  { group:'H', team:'Spain', flag:'🇪🇸', code:'ESP 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'H', team:'Spain', flag:'🇪🇸', code:'ESP 4', name:'Aymeric Laporte', status:'missing' },
+  { group:'H', team:'Spain', flag:'🇪🇸', code:'ESP 6', name:'Pedro Porro', status:'missing' },
+  { group:'H', team:'Spain', flag:'🇪🇸', code:'ESP 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'H', team:'Spain', flag:'🇪🇸', code:'ESP rest', name:'All other players', status:'have' },
+
+  { group:'H', team:'Cabo Verde', flag:'🇨🇻', code:'CPV 1', name:'Badge (foil)', foil:true, status:'missing' },
+  { group:'H', team:'Cabo Verde', flag:'🇨🇻', code:'CPV 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'H', team:'Cabo Verde', flag:'🇨🇻', code:'CPV rest', name:'All players', status:'have' },
+
+  { group:'H', team:'Saudi Arabia', flag:'🇸🇦', code:'KSA 1', name:'Badge (foil)', foil:true, status:'missing' },
+  { group:'H', team:'Saudi Arabia', flag:'🇸🇦', code:'KSA 9', name:'Musab Aljuwayr', status:'missing' },
+  { group:'H', team:'Saudi Arabia', flag:'🇸🇦', code:'KSA 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'H', team:'Saudi Arabia', flag:'🇸🇦', code:'KSA 17', name:'Abdulrahman Alobud', status:'missing' },
+  { group:'H', team:'Saudi Arabia', flag:'🇸🇦', code:'KSA rest', name:'All other players', status:'have' },
+
+  { group:'H', team:'Uruguay', flag:'🇺🇾', code:'URU 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'H', team:'Uruguay', flag:'🇺🇾', code:'URU 6', name:'Sebastián Cáceres', status:'missing' },
+  { group:'H', team:'Uruguay', flag:'🇺🇾', code:'URU 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'H', team:'Uruguay', flag:'🇺🇾', code:'URU rest', name:'All other players', status:'have' },
+
+  // GROUP I
+  { group:'I', team:'France', flag:'🇫🇷', code:'FRA 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'I', team:'France', flag:'🇫🇷', code:'FRA 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'I', team:'France', flag:'🇫🇷', code:'FRA 18', name:'Kingsley Coman', status:'missing' },
+  { group:'I', team:'France', flag:'🇫🇷', code:'FRA rest', name:'All other players', status:'have' },
+
+  { group:'I', team:'Senegal', flag:'🇸🇳', code:'SEN 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'I', team:'Senegal', flag:'🇸🇳', code:'SEN 2', name:'Krépin Diatta', status:'missing' },
+  { group:'I', team:'Senegal', flag:'🇸🇳', code:'SEN 3', name:'Vehrann Diouf', status:'secondary' },
+  { group:'I', team:'Senegal', flag:'🇸🇳', code:'SEN 5', name:'Abdoulaye Seck', status:'missing' },
+  { group:'I', team:'Senegal', flag:'🇸🇳', code:'SEN 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'I', team:'Senegal', flag:'🇸🇳', code:'SEN rest', name:'All other players', status:'have' },
+
+  { group:'I', team:'Iraq', flag:'🇮🇶', code:'IRQ 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'I', team:'Iraq', flag:'🇮🇶', code:'IRQ 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'I', team:'Iraq', flag:'🇮🇶', code:'IRQ rest', name:'All players', status:'have' },
+
+  { group:'I', team:'Norway', flag:'🇳🇴', code:'NOR 1', name:'Badge (foil)', foil:true, status:'missing' },
+  { group:'I', team:'Norway', flag:'🇳🇴', code:'NOR 6', name:'Marcus Holmgren Pedersen', status:'missing' },
+  { group:'I', team:'Norway', flag:'🇳🇴', code:'NOR 7', name:'David Møller Wolfe', status:'missing' },
+  { group:'I', team:'Norway', flag:'🇳🇴', code:'NOR 8', name:'Torbjørn Heggem', status:'missing' },
+  { group:'I', team:'Norway', flag:'🇳🇴', code:'NOR 10', name:'Martin Ødegaard', status:'missing' },
+  { group:'I', team:'Norway', flag:'🇳🇴', code:'NOR 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'I', team:'Norway', flag:'🇳🇴', code:'NOR rest', name:'All other players', status:'have' },
+
+  // GROUP J
+  { group:'J', team:'Argentina', flag:'🇦🇷', code:'ARG 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'J', team:'Argentina', flag:'🇦🇷', code:'ARG 4', name:'Cristian Romero', status:'missing' },
+  { group:'J', team:'Argentina', flag:'🇦🇷', code:'ARG 8', name:'Enzo Fernández', status:'missing' },
+  { group:'J', team:'Argentina', flag:'🇦🇷', code:'ARG 11', name:'Ezequiel Palacios', status:'missing' },
+  { group:'J', team:'Argentina', flag:'🇦🇷', code:'ARG 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'J', team:'Argentina', flag:'🇦🇷', code:'ARG 15', name:'Franco Mastantuono', status:'missing' },
+  { group:'J', team:'Argentina', flag:'🇦🇷', code:'ARG 16', name:'Nico González', status:'missing' },
+  { group:'J', team:'Argentina', flag:'🇦🇷', code:'ARG rest', name:'All other players', status:'have' },
+
+  { group:'J', team:'Algeria', flag:'🇩🇿', code:'ALG 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'J', team:'Algeria', flag:'🇩🇿', code:'ALG 8', name:'Ismael Bennacer', status:'missing' },
+  { group:'J', team:'Algeria', flag:'🇩🇿', code:'ALG 10', name:'Hicham Boudaoui', status:'missing' },
+  { group:'J', team:'Algeria', flag:'🇩🇿', code:'ALG 13', name:'Team Photo (WRONG: Saudi photo placed)', photo:true, status:'replace' },
+  { group:'J', team:'Algeria', flag:'🇩🇿', code:'ALG 15', name:'Riyad Mahrez', status:'missing' },
+  { group:'J', team:'Algeria', flag:'🇩🇿', code:'ALG 19', name:'Baghdad Bounedjah', status:'missing' },
+  { group:'J', team:'Algeria', flag:'🇩🇿', code:'ALG 20', name:'Mohammed Amoura', status:'missing' },
+  { group:'J', team:'Algeria', flag:'🇩🇿', code:'ALG rest', name:'All other players', status:'have' },
+
+  { group:'J', team:'Austria', flag:'🇦🇹', code:'AUT 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'J', team:'Austria', flag:'🇦🇹', code:'AUT 3', name:'Patrick Pentz', status:'secondary' },
+  { group:'J', team:'Austria', flag:'🇦🇹', code:'AUT 7', name:'Stefan Posch', status:'missing' },
+  { group:'J', team:'Austria', flag:'🇦🇹', code:'AUT 10', name:'Xaver Schlager', status:'missing' },
+  { group:'J', team:'Austria', flag:'🇦🇹', code:'AUT 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'J', team:'Austria', flag:'🇦🇹', code:'AUT 20', name:'Marko Arnautović', status:'missing' },
+  { group:'J', team:'Austria', flag:'🇦🇹', code:'AUT rest', name:'All other players', status:'have' },
+
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR 2', name:'Vazed Abulaila', status:'missing' },
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR 3', name:'Ihsan Haddad', status:'missing' },
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR 5', name:'Vazan Al-Arab', status:'missing' },
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR 17', name:'Mahmoud Al-Mardi', status:'secondary' },
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR 18', name:'Ali Olwan', status:'missing' },
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR 20', name:'Ibrahim Sabra', status:'missing' },
+  { group:'J', team:'Jordan', flag:'🇯🇴', code:'JOR rest', name:'All other players', status:'have' },
+
+  // GROUP K
+  { group:'K', team:'Portugal', flag:'🇵🇹', code:'POR 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'K', team:'Portugal', flag:'🇵🇹', code:'POR 4', name:'Rúben Dias', status:'missing' },
+  { group:'K', team:'Portugal', flag:'🇵🇹', code:'POR 6', name:'Diogo Dalot', status:'missing' },
+  { group:'K', team:'Portugal', flag:'🇵🇹', code:'POR 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'K', team:'Portugal', flag:'🇵🇹', code:'POR 15', name:'Cristiano Ronaldo', status:'missing' },
+  { group:'K', team:'Portugal', flag:'🇵🇹', code:'POR rest', name:'All other players', status:'have' },
+
+  { group:'K', team:'Congo DR', flag:'🇨🇩', code:'COD 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'K', team:'Congo DR', flag:'🇨🇩', code:'COD 2', name:'Lionel Mpasi', status:'missing' },
+  { group:'K', team:'Congo DR', flag:'🇨🇩', code:'COD 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'K', team:'Congo DR', flag:'🇨🇩', code:'COD 14', name:'Théo Bongonda', status:'missing' },
+  { group:'K', team:'Congo DR', flag:'🇨🇩', code:'COD rest', name:'All other players', status:'have' },
+
+  { group:'K', team:'Uzbekistan', flag:'🇺🇿', code:'UZB 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'K', team:'Uzbekistan', flag:'🇺🇿', code:'UZB 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'K', team:'Uzbekistan', flag:'🇺🇿', code:'UZB rest', name:'All players', status:'have' },
+
+  { group:'K', team:'Colombia', flag:'🇨🇴', code:'COL 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'K', team:'Colombia', flag:'🇨🇴', code:'COL 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'K', team:'Colombia', flag:'🇨🇴', code:'COL 15', name:'Juan Fernando Quintero', status:'missing' },
+  { group:'K', team:'Colombia', flag:'🇨🇴', code:'COL rest', name:'All other players', status:'have' },
+
+  // GROUP L
+  { group:'L', team:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', code:'ENG 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'L', team:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', code:'ENG 9', name:'Jordan Henderson', status:'missing' },
+  { group:'L', team:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', code:'ENG 12', name:'Cole Palmer', status:'missing' },
+  { group:'L', team:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', code:'ENG 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'L', team:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', code:'ENG 14', name:'Morgan Rogers', status:'missing' },
+  { group:'L', team:'England', flag:'🏴󠁧󠁢󠁥󠁮󠁧󠁿', code:'ENG rest', name:'All other players', status:'have' },
+
+  { group:'L', team:'Croatia', flag:'🇭🇷', code:'CRO 1', name:'Badge (foil - UPSIDE DOWN)', foil:true, status:'replace' },
+  { group:'L', team:'Croatia', flag:'🇭🇷', code:'CRO 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'L', team:'Croatia', flag:'🇭🇷', code:'CRO 15', name:'Petar Sučić', status:'missing' },
+  { group:'L', team:'Croatia', flag:'🇭🇷', code:'CRO 17', name:'Marko Pašalić', status:'missing' },
+  { group:'L', team:'Croatia', flag:'🇭🇷', code:'CRO rest', name:'All other players', status:'have' },
+
+  { group:'L', team:'Ghana', flag:'🇬🇭', code:'GHA 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'L', team:'Ghana', flag:'🇬🇭', code:'GHA 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'L', team:'Ghana', flag:'🇬🇭', code:'GHA 16', name:'Jordan Ayew', status:'missing' },
+  { group:'L', team:'Ghana', flag:'🇬🇭', code:'GHA rest', name:'All other players', status:'have' },
+
+  { group:'L', team:'Panama', flag:'🇵🇦', code:'PAN 1', name:'Badge (foil)', foil:true, status:'have' },
+  { group:'L', team:'Panama', flag:'🇵🇦', code:'PAN 4', name:'Fidel Escobar', status:'missing' },
+  { group:'L', team:'Panama', flag:'🇵🇦', code:'PAN 5', name:'Andrés Andrade', status:'secondary' },
+  { group:'L', team:'Panama', flag:'🇵🇦', code:'PAN 6', name:'Michael Amir Murillo', status:'secondary' },
+  { group:'L', team:'Panama', flag:'🇵🇦', code:'PAN 8', name:'José Córdoba', status:'missing' },
+  { group:'L', team:'Panama', flag:'🇵🇦', code:'PAN 11', name:'Anibal Godoy', status:'missing' },
+  { group:'L', team:'Panama', flag:'🇵🇦', code:'PAN 13', name:'Team Photo', photo:true, status:'have' },
+  { group:'L', team:'Panama', flag:'🇵🇦', code:'PAN rest', name:'All other players', status:'have' },
+
+  // HISTORY
+  { group:'HISTORY', team:'FIFA World Cup History', flag:'🏆', code:'FWC 11', name:'1954 Switzerland', status:'secondary' },
+  { group:'HISTORY', team:'FIFA World Cup History', flag:'🏆', code:'FWC rest', name:'All other history stickers', status:'have' },
+
+  // COCA-COLA
+  { group:'COCA', team:'Coca-Cola Special Edition', flag:'🥤', code:'CC1', name:'Lamine Yamal', status:'have' },
+  { group:'COCA', team:'Coca-Cola Special Edition', flag:'🥤', code:'CC2', name:'Lautaro Martínez', status:'have' },
+  { group:'COCA', team:'Coca-Cola Special Edition', flag:'🥤', code:'CC3', name:'Harry Kane', status:'missing' },
+  { group:'COCA', team:'Coca-Cola Special Edition', flag:'🥤', code:'CC4', name:'Santiago Giménez', status:'missing' },
+  { group:'COCA', team:'Coca-Cola Special Edition', flag:'🥤', code:'CC5', name:'Joshua Kimmich', status:'have' },
+  { group:'COCA', team:'Coca-Cola Special Edition', flag:'🥤', code:'CC6', name:'Jefferson Lerma', status:'missing' },
+  { group:'COCA', team:'Coca-Cola Special Edition', flag:'🥤', code:'CC7', name:'Weston McKennie', status:'have' },
+  { group:'COCA', team:'Coca-Cola Special Edition', flag:'🥤', code:'CC8', name:'Virgil van Dijk', status:'missing' },
+  { group:'COCA', team:'Coca-Cola Special Edition', flag:'🥤', code:'CC9', name:'Alphonso Davies', status:'missing' },
+  { group:'COCA', team:'Coca-Cola Special Edition', flag:'🥤', code:'CC10', name:'Edson Álvarez', status:'have' },
+  { group:'COCA', team:'Coca-Cola Special Edition', flag:'🥤', code:'CC11', name:'CC11', status:'missing' },
+  { group:'COCA', team:'Coca-Cola Special Edition', flag:'🥤', code:'CC12', name:'Gabriel Magalhães', status:'missing' },
+];
+
+// Build stable id and load saved overrides
+ALBUM.forEach((s, i) => s.id = s.code + '|' + s.team);
+let saved = JSON.parse(localStorage.getItem('wc26_v2') || '{}');
+ALBUM.forEach(s => { if (saved[s.id]) s.status = saved[s.id]; });
+
+let filterMode = 'all';
+let searchTerm = '';
+
+const GROUP_NAMES = {
+  EXTRA:'Host Countries & Emblems',
+  A:'Group A', B:'Group B', C:'Group C', D:'Group D', E:'Group E', F:'Group F',
+  G:'Group G', H:'Group H', I:'Group I', J:'Group J', K:'Group K', L:'Group L',
+  HISTORY:'FIFA World Cup History', COCA:'Coca-Cola Special Edition'
+};
+
+function save() { 
+  const o = {}; ALBUM.forEach(s => o[s.id] = s.status);
+  localStorage.setItem('wc26_v2', JSON.stringify(o));
+}
+
+// cycle: missing -> have -> secondary -> replace -> missing
+function cycle(id) {
+  const s = ALBUM.find(x => x.id === id);
+  const order = ['missing','have','secondary','replace'];
+  s.status = order[(order.indexOf(s.status) + 1) % order.length];
+  save(); updateStats(); renderAll();
+}
+
+function updateStats() {
+  // 'rest' rows count as 1 line but represent the bulk; for headline numbers we
+  // count individual tracked lines. Real-sticker total is ~681 but we track key items + rest groups.
+  const tracked = ALBUM.filter(s => !s.code.endsWith('rest'));
+  const have = tracked.filter(s => s.status === 'have').length;
+  const missing = tracked.filter(s => s.status === 'missing' || s.status === 'replace').length;
+  const flag = tracked.filter(s => s.status === 'secondary').length;
+  // Completion based on the full album (approx 681 stickers); rest-rows are complete teams' filler
+  const restHave = ALBUM.filter(s => s.code.endsWith('rest')).length;
+  const totalForPct = tracked.length;
+  const pct = Math.round((have / totalForPct) * 100);
+  document.getElementById('stat-have').textContent = have;
+  document.getElementById('stat-missing').textContent = missing;
+  document.getElementById('stat-flag').textContent = flag;
+  document.getElementById('stat-pct').textContent = pct + '%';
+  document.getElementById('progress-bar').style.width = pct + '%';
+}
+
+function setFilter(mode, btn) {
+  filterMode = mode;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active'); renderAll();
+}
+function filterAll() { searchTerm = document.getElementById('search').value.toLowerCase(); renderAll(); }
+function scrollToGroup(g) {
+  if (!g) return;
+  const id = g === 'summary' ? 'summary-block' : 'group-' + g;
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function resetAll() {
+  if (!confirm('Reset all stickers to the last scanned state (18 June)?')) return;
+  localStorage.removeItem('wc26_v2'); location.reload();
+}
+function toggleCollapse(el) { el.closest('.summary-section').classList.toggle('collapsed'); }
+
+function statusClass(st) {
+  return st === 'have' ? 'have' : st === 'secondary' ? 'secondary' : st === 'replace' ? 'replace' : 'missing';
+}
+function passesFilter(s) {
+  if (filterMode === 'missing' && !(s.status === 'missing' || s.status === 'replace')) return false;
+  if (filterMode === 'have' && s.status !== 'have') return false;
+  if (filterMode === 'special' && !(s.status === 'secondary' || s.status === 'replace')) return false;
+  if (searchTerm) {
+    const hay = (s.team + ' ' + s.code + ' ' + s.name).toLowerCase();
+    if (!hay.includes(searchTerm)) return false;
+  }
+  return true;
+}
+
+function chip(s) {
+  const cls = statusClass(s.status);
+  const foilMark = s.foil ? ' foil-marker' : '';
+  let tag = '';
+  if (s.status === 'secondary') tag = '<span class="tag sec">2nd book</span>';
+  if (s.status === 'replace') tag = '<span class="tag rep">replace</span>';
+  return `<div class="sticker-chip ${cls}${foilMark}" onclick="cycle('${s.id}')" title="Tap to change status">
+    <span class="code">${s.code}</span>
+    <span class="name-label">${s.name}</span>${tag}
+  </div>`;
+}
+
+function renderSummary() {
+  // Foil needed (missing or replace, foil:true)
+  const foilNeed = ALBUM.filter(s => s.foil && (s.status === 'missing' || s.status === 'replace'));
+  const photoNeed = ALBUM.filter(s => s.photo && (s.status === 'missing' || s.status === 'replace'));
+  const replaceNeed = ALBUM.filter(s => s.status === 'replace');
+  const secondary = ALBUM.filter(s => s.status === 'secondary');
+
+  // Completed teams: every tracked sticker for that team is 'have' (rest counts as have)
+  const teams = [...new Set(ALBUM.filter(s => !['HISTORY','COCA','EXTRA'].includes(s.group)).map(s => s.team))];
+  const done = [];
+  teams.forEach(t => {
+    const ts = ALBUM.filter(s => s.team === t);
+    if (ts.every(s => s.status === 'have')) done.push(ts[0]);
+  });
+
+  const miniChip = (s, doneStyle) =>
+    `<div class="mini-chip${doneStyle?' done-chip':''}"><span class="flag">${s.flag}</span><span class="code">${s.code||s.team}</span> <span style="color:var(--muted)">${doneStyle? s.team : s.name}</span></div>`;
+
+  let html = '<div id="summary-block">';
+
+  // Completed teams
+  html += `<div class="summary-section sec-done">
+    <h3 class="collapse-toggle" onclick="toggleCollapse(this)"><span class="arrow">▾</span> 🎉 Completed teams — yay us! <span class="count-badge">${done.length}</span></h3>
+    <div class="summary-body">
+      ${done.length ? '<div class="chip-row">' + done.map(s => miniChip(s, true)).join('') + '</div>'
+        : '<div class="info-line">No fully-complete teams yet — keep going!</div>'}
+    </div></div>`;
+
+  // Foil / shiny needed
+  html += `<div class="summary-section sec-foil">
+    <h3 class="collapse-toggle" onclick="toggleCollapse(this)"><span class="arrow">▾</span> ✦ Shiny / foil stickers still needed <span class="count-badge">${foilNeed.length}</span></h3>
+    <div class="summary-body">
+      <div class="info-line">The glittery badge & emblem stickers — quick to spot what's outstanding.</div>
+      ${foilNeed.length ? '<div class="chip-row">' + foilNeed.map(s => miniChip(s)).join('') + '</div>'
+        : '<div class="info-line">All foils collected. 🎉</div>'}
+    </div></div>`;
+
+  // Team photos needed
+  html += `<div class="summary-section sec-photo">
+    <h3 class="collapse-toggle" onclick="toggleCollapse(this)"><span class="arrow">▾</span> 📷 Team photos still needed <span class="count-badge">${photoNeed.length}</span></h3>
+    <div class="summary-body">
+      ${photoNeed.length ? '<div class="chip-row">' + photoNeed.map(s => miniChip(s)).join('') + '</div>'
+        : '<div class="info-line">All team photos collected. 🎉</div>'}
+    </div></div>`;
+
+  // Needs replacement
+  html += `<div class="summary-section sec-replace">
+    <h3 class="collapse-toggle" onclick="toggleCollapse(this)"><span class="arrow">▾</span> ⚠️ Needs replacement <span class="count-badge">${replaceNeed.length}</span></h3>
+    <div class="summary-body">
+      <div class="info-line">Placed but wrong/damaged — treat these as still-needed.</div>
+      ${replaceNeed.length ? '<div class="chip-row">' + replaceNeed.map(s => miniChip(s)).join('') + '</div>'
+        : '<div class="info-line">Nothing to replace.</div>'}
+    </div></div>`;
+
+  // Secondary book
+  html += `<div class="summary-section sec-secondary">
+    <h3 class="collapse-toggle" onclick="toggleCollapse(this)"><span class="arrow">▾</span> ✏️ Have in 2nd book (pencil-marked) <span class="count-badge">${secondary.length}</span></h3>
+    <div class="summary-body">
+      <div class="info-line">Owned but living in the secondary book — not counted as placed, just tracked.</div>
+      ${secondary.length ? '<div class="chip-row">' + secondary.map(s => miniChip(s)).join('') + '</div>'
+        : '<div class="info-line">None flagged.</div>'}
+    </div></div>`;
+
+  html += '</div>';
+  return html;
+}
+
+function renderGroups() {
+  const groups = [...new Set(ALBUM.map(s => s.group))];
+  let html = '';
+  for (const group of groups) {
+    const stickers = ALBUM.filter(s => s.group === group);
+    const teams = [...new Set(stickers.map(s => s.team))];
+    let groupHtml = '';
+
+    for (const team of teams) {
+      const ts = stickers.filter(s => s.team === team);
+      const visible = ts.filter(passesFilter);
+      if (!visible.length) continue;
+      const allDone = ts.every(s => s.status === 'have');
+      const haveCount = ts.filter(s => s.status === 'have').length;
+      groupHtml += `<div class="team-card${allDone?' complete':''}">
+        <div class="team-header">
+          <span class="team-flag">${ts[0].flag}</span>
+          <span class="team-name">${team}</span>
+          <span class="team-count${allDone?' done':''}">${allDone ? 'Complete ✓' : haveCount+'/'+ts.length}</span>
+        </div>
+        <div class="stickers-list">${visible.map(chip).join('')}</div>
+      </div>`;
+    }
+    if (!groupHtml) continue;
+    const gHave = stickers.filter(s => s.status === 'have').length;
+    html += `<div class="group-section" id="group-${group}">
+      <div class="group-header">
+        <span class="group-badge">${group === 'EXTRA' ? '★' : group === 'HISTORY' ? 'H' : group === 'COCA' ? 'CC' : group}</span>
+        <span class="group-name">${GROUP_NAMES[group]}</span>
+        <span class="group-progress"><span>${gHave}</span>/${stickers.length} lines</span>
+      </div>
+      <div class="teams-grid">${groupHtml}</div>
+    </div>`;
+  }
+  return html || '<div class="empty-state">No stickers match your search/filter.</div>';
+}
+
+function renderAll() {
+  document.getElementById('main-content').innerHTML = renderSummary() + renderGroups();
+}
+
+updateStats();
+renderAll();
+</script>
+</body>
+</html>
